@@ -3,12 +3,15 @@ using UnityEngine;
 public class ChunkGenerator : MonoBehaviour
 {
 
+    // size of the chunks in vertices
     public int chunkSizeX = 20;
     public int chunkSizeZ = 20;
 
-    public float chunkScaleX = 1f;
-    public float chunkScaleZ = 1f;
+    // resolution of vertices (how many units per vertex)
+    public float chunkResolutionX = 1f;
+    public float chunkResolutionZ = 1f;
 
+    // size of the total terrain in chunks
     public int xSize = 20;
     public int zSize = 20;
 
@@ -22,21 +25,23 @@ public class ChunkGenerator : MonoBehaviour
 
     public void GenerateChunks()
     {
-        chunks = new GameObject[chunkSizeX * chunkSizeZ];
+        chunks = new GameObject[xSize * zSize];
 
-        for (int z = 0; z < chunkSizeZ; z++)
+        for (int z = 0; z < zSize; z++)
         {
-            for (int x = 0; x < chunkSizeX; x++)
+            for (int x = 0; x < xSize; x++)
             {
                 // Instantiate as a child of the current object
-                GameObject chunk = Instantiate(emptyChunkPrefab, new Vector3(x * xSize * chunkScaleX, 0, z * zSize * chunkScaleZ), Quaternion.identity, transform);
-                chunk.GetComponent<MeshGenerator>().xSize = xSize;
-                chunk.GetComponent<MeshGenerator>().zSize = zSize;
-                chunk.GetComponent<MeshGenerator>().xScale = chunkScaleX;
-                chunk.GetComponent<MeshGenerator>().zScale = chunkScaleZ;
+                GameObject chunk = Instantiate(emptyChunkPrefab, new Vector3(x * chunkSizeX * chunkResolutionX, 0, z * chunkSizeZ * chunkResolutionZ), Quaternion.identity, transform);
+                chunk.GetComponent<MeshGenerator>().xSize = chunkSizeX;
+                chunk.GetComponent<MeshGenerator>().zSize = chunkSizeZ;
+                chunk.GetComponent<MeshGenerator>().xResolution = chunkResolutionX;
+                chunk.GetComponent<MeshGenerator>().zResolution = chunkResolutionZ;
                 chunk.GetComponent<MeshGenerator>().heightMapper = heightMapper;
                 chunk.GetComponent<MeshGenerator>().realTimeUpdate = realTimeUpdate;
-                chunks[z * chunkSizeX + x] = chunk;
+                chunks[z * xSize + x] = chunk;
+
+                chunk.GetComponent<MeshGenerator>().Create();
             }
         }
     }
@@ -58,15 +63,17 @@ public class ChunkGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        if (realTimeUpdate)
-        {
-            foreach (GameObject chunk in chunks)
-            {
-                Destroy(chunk);
-            }
-            GenerateChunks();
-        }
+        // if (realTimeUpdate)
+        // {
+        //     if (chunks != null)
+        //     {
+        //         foreach (GameObject chunk in chunks)
+        //         {
+        //             Destroy(chunk);
+        //         }
+        //         GenerateChunks();
+        //     }
+        // }
 
     }
 }

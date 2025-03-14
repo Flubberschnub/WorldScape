@@ -14,16 +14,19 @@ public class FractalPerlinNoiseHeightMapper : HeightMapper
 
     public override Vector3[] ApplyHeightMap(Vector3 positionOffset, Vector3[] vertices, int xSize, int zSize)
     {
-        for (int i = 0, z = 0; z <= zSize; z++)
+        Vector3[] newVertices = new Vector3[vertices.Length];
+
+        for (int i = 0; i < vertices.Length; i++)
         {
-            for (int x = 0; x <= xSize; x++)
-            {
-                float y = FractalPerlinNoise((positionOffset.x + x) * xScale, (positionOffset.z + z) * zScale) * amplitude;
-                vertices[i] = new Vector3(x, y, z);
-                i++;
-            }
+            float x = vertices[i].x + positionOffset.x;
+            float z = vertices[i].z + positionOffset.z;
+
+            float y = FractalPerlinNoise(x * xScale, z * zScale) * amplitude;
+
+            newVertices[i] = new Vector3(vertices[i].x, y, vertices[i].z);
         }
-        return vertices;
+
+        return newVertices;
     }
 
     private float FractalPerlinNoise(float x, float z){

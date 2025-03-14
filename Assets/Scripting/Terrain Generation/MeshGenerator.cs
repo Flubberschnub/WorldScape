@@ -11,16 +11,17 @@ public class MeshGenerator : MonoBehaviour
 
     public bool realTimeUpdate = false;
 
+    // resolution of vertices (how many units per vertex)
+    public float xResolution = 1f;
+    public float zResolution = 1f;
+
+    // size of the mesh in vertices
     public int xSize = 20;
     public int zSize = 20;
 
-    public float xScale = 1f;
-    public float zScale = 1f;
-
 
     public HeightMapper heightMapper;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void Create()
     {
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
@@ -39,7 +40,7 @@ public class MeshGenerator : MonoBehaviour
         {
             for (int x = 0; x <= xSize; x++)
             {
-                vertices[i] = new Vector3(x * xScale, 0, z * zScale);
+                vertices[i] = new Vector3(x * xResolution, 0, z * zResolution);
                 i++;
             }
         }
