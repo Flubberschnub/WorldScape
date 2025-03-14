@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class MeshGenerator : MonoBehaviour
 {
 
@@ -92,13 +93,13 @@ public class MeshGenerator : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        if (vertices == null)
-        {
-            return;
-        }
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            Gizmos.DrawSphere(vertices[i] + transform.position, .1f);
-        }
+        // if (vertices == null)
+        // {
+        //     return;
+        // }
+        // for (int i = 0; i < vertices.Length; i++)
+        // {
+        //     Gizmos.DrawSphere(vertices[i] + transform.position, .1f);
+        // }
     }
 }
