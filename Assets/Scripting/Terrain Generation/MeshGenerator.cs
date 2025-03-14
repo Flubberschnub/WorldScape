@@ -14,6 +14,9 @@ public class MeshGenerator : MonoBehaviour
     public int xSize = 20;
     public int zSize = 20;
 
+    public float xScale = 1f;
+    public float zScale = 1f;
+
 
     public HeightMapper heightMapper;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -36,7 +39,7 @@ public class MeshGenerator : MonoBehaviour
         {
             for (int x = 0; x <= xSize; x++)
             {
-                vertices[i] = new Vector3(x, 0, z);
+                vertices[i] = new Vector3(x * xScale, 0, z * zScale);
                 i++;
             }
         }

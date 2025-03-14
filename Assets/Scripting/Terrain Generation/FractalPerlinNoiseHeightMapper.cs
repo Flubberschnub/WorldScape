@@ -18,7 +18,7 @@ public class FractalPerlinNoiseHeightMapper : HeightMapper
         {
             for (int x = 0; x <= xSize; x++)
             {
-                float y = FractalPerlinNoise((positionOffset.x + x) * xScale, (positionOffset.z + z) * zScale);
+                float y = FractalPerlinNoise((positionOffset.x + x) * xScale, (positionOffset.z + z) * zScale) * amplitude;
                 vertices[i] = new Vector3(x, y, z);
                 i++;
             }
@@ -30,20 +30,17 @@ public class FractalPerlinNoiseHeightMapper : HeightMapper
 
         float total = 0;
         float frequency = 1;
-        float amplitude = this.amplitude;
-        float maxValue = 0;  // Used for normalizing result to 0.0 - 1.0
+        float curAmplitude = 1;
 
         for (int i = 0; i < octaves; i++)
         {
-            total += Mathf.PerlinNoise(x * frequency, z * frequency) * amplitude;
+            total += Mathf.PerlinNoise(x * frequency, z * frequency) * curAmplitude;
 
-            maxValue += amplitude;
-
-            amplitude *= persistence;
+            curAmplitude *= persistence;
             frequency *= lacunarity;
         }
 
-        return total / maxValue;
+        return total;
         
     }
     

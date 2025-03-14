@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4b01bcc81c041e4681cdfd89faa37d4, type: 3}
   m_Name: FractalPerlinNoiseHeightMapper
   m_EditorClassIdentifier: 
-  xScale: 1
-  zScale: 1
-  amplitude: 1
+  xScale: 0.007
+  zScale: 0.007
+  amplitude: 60
   persistence: 0.5
   lacunarity: 2
-  octaves: 4
+  octaves: 5
