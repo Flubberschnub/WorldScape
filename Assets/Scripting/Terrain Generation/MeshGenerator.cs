@@ -71,7 +71,7 @@ public class MeshGenerator : MonoBehaviour
 
         mesh.Clear();
 
-        mesh.vertices = heightMapper.ApplyHeightMap(vertices, xSize, zSize);
+        mesh.vertices = heightMapper.ApplyHeightMap(transform.position, vertices, xSize, zSize);
         mesh.triangles = triangles;
 
         mesh.RecalculateNormals();
@@ -98,7 +98,7 @@ public class MeshGenerator : MonoBehaviour
         }
         for (int i = 0; i < vertices.Length; i++)
         {
-            Gizmos.DrawSphere(vertices[i], .1f);
+            Gizmos.DrawSphere(vertices[i] + transform.position, .1f);
         }
     }
 }
