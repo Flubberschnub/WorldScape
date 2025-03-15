@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ChunkGenerator : MonoBehaviour
@@ -15,16 +16,25 @@ public class ChunkGenerator : MonoBehaviour
     public int xSize = 20;
     public int zSize = 20;
 
-    public HeightMapper heightMapper;
+    public float speed;
 
-    public bool realTimeUpdate = false;
+    public HeightMapper heightMapper;
+    
+    public bool realTimeUpdate;
 
     private GameObject[] chunks;
+    
+    public Gradient gradient;
+    
+    public float globalMinHeight;
+    public float globalMaxHeight;
 
     public GameObject emptyChunkPrefab;
 
     public void GenerateChunks()
     {
+        globalMinHeight = float.MaxValue;
+        globalMaxHeight = float.MinValue;
         chunks = new GameObject[xSize * zSize];
 
         for (int z = 0; z < zSize; z++)
@@ -39,11 +49,31 @@ public class ChunkGenerator : MonoBehaviour
                 chunk.GetComponent<MeshGenerator>().zResolution = chunkResolutionZ;
                 chunk.GetComponent<MeshGenerator>().heightMapper = heightMapper;
                 chunk.GetComponent<MeshGenerator>().realTimeUpdate = realTimeUpdate;
+                chunk.GetComponent<MeshGenerator>().gradient = gradient;
+                
                 chunks[z * xSize + x] = chunk;
 
                 chunk.GetComponent<MeshGenerator>().Create();
+                globalMinHeight = Mathf.Min(globalMinHeight, chunk.GetComponent<MeshGenerator>().minTerrainHeight);
+                globalMaxHeight = Mathf.Max(globalMaxHeight, chunk.GetComponent<MeshGenerator>().maxTerrainHeight);
             }
         }
+    }
+    
+    public GameObject GenerateEmptyChunkPrefab()
+    {
+        GameObject emptyChunk = new GameObject("ChunkPrefab");
+        emptyChunk.AddComponent<MeshFilter>();
+        emptyChunk.AddComponent<MeshRenderer>();
+        emptyChunk.AddComponent<MeshGenerator>();
+        
+        //Make the mesh filter a plane
+        emptyChunk.GetComponent<MeshFilter>().mesh = Resources.GetBuiltinResource<Mesh>("New-Plane.fbx");
+        
+        //Set the material to the default material
+        emptyChunk.GetComponent<MeshRenderer>().material = new Material(Shader.Find("Custom/HeightmapColorShader"));
+        
+        return emptyChunk;
     }
 
     public void ClearChunks()
@@ -54,26 +84,31 @@ public class ChunkGenerator : MonoBehaviour
         }
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
+        emptyChunkPrefab = GenerateEmptyChunkPrefab();
+        GenerateChunks();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        // if (realTimeUpdate)
-        // {
-        //     if (chunks != null)
-        //     {
-        //         foreach (GameObject chunk in chunks)
-        //         {
-        //             Destroy(chunk);
-        //         }
-        //         GenerateChunks();
-        //     }
-        // }
-
+        if (realTimeUpdate)
+        {
+            if (chunks != null)
+            {
+                foreach (GameObject chunk in chunks)
+                {
+                    chunk.GetComponent<MeshGenerator>().speed = speed;
+                    chunk.GetComponent<MeshGenerator>().UpdateVertices();
+                    globalMinHeight = Mathf.Min(globalMinHeight, chunk.GetComponent<MeshGenerator>().minTerrainHeight);
+                    globalMaxHeight = Mathf.Max(globalMaxHeight, chunk.GetComponent<MeshGenerator>().maxTerrainHeight);
+                }
+                foreach (GameObject chunk in chunks)
+                {
+                    chunk.GetComponent<MeshGenerator>().UpdateColors(globalMinHeight, globalMaxHeight);
+                }
+            }
+        }
     }
+    
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -8,6 +9,7 @@ public class MeshGenerator : MonoBehaviour
 
     Vector3[] vertices;
     int[] triangles;
+    Color[] colors;
 
     public bool realTimeUpdate = false;
 
@@ -18,16 +20,23 @@ public class MeshGenerator : MonoBehaviour
     // size of the mesh in vertices
     public int xSize = 20;
     public int zSize = 20;
-
+    
+    public float speed;
+    
+    public Gradient gradient;
+    
+    public float minTerrainHeight;
+    public float maxTerrainHeight;
 
     public HeightMapper heightMapper;
     public void Create()
     {
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
-
+        
         CreateBase();
-        UpdateMesh();
+        UpdateVertices();
+        UpdateColors(minTerrainHeight, maxTerrainHeight);
 
     }
 
@@ -68,30 +77,49 @@ public class MeshGenerator : MonoBehaviour
             }
             vert++;
         }
-
+        
+        colors = new Color[vertices.Length];
+        for (int i = 0, z = 0; z <= zSize; z++)
+        {
+            for (int x = 0; x <= xSize; x++)
+            {
+                float height = Mathf.InverseLerp(minTerrainHeight, maxTerrainHeight, vertices[i].y);
+                colors[i] = gradient.Evaluate(height);
+                i++;
+            }
+        }
+        
     }
-
-    void UpdateMesh()
+    
+    public void UpdateVertices()
     {
-
         mesh.Clear();
-
-        mesh.vertices = heightMapper.ApplyHeightMap(transform.position, vertices, xSize, zSize);
+        
+        mesh.vertices = heightMapper.ApplyHeightMap(transform.position + new Vector3(Time.time*speed, 0, Time.time*speed), vertices, xSize, zSize);
         mesh.triangles = triangles;
+        
+        minTerrainHeight = Single.MaxValue;
+        maxTerrainHeight = Single.MinValue;
+        foreach (var vertex in mesh.vertices)
+        {
+            if (vertex.y < minTerrainHeight)
+                minTerrainHeight = vertex.y;
+            if (vertex.y > maxTerrainHeight)
+                maxTerrainHeight = vertex.y;
+        }
+    }
+    
+    public void UpdateColors(float min, float max)
+    {
+        for (int i = 0; i < mesh.vertices.Length; i++)
+        {
+            float height = mesh.vertices[i].y;
+            float t = Mathf.InverseLerp(min, max, height);
+            colors[i] = gradient.Evaluate(t);
+        }
+        mesh.colors = colors;
 
         mesh.RecalculateNormals();
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-        if (realTimeUpdate)
-        {
-            //CreateBase();
-            UpdateMesh();
-        }
 
     }
 
