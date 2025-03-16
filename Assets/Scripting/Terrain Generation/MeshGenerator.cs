@@ -40,7 +40,6 @@ namespace Scripting.Terrain_Generation
             CreateBase();
             UpdateVertices();
             UpdateColors(minTerrainHeight, maxTerrainHeight);
-
         }
 
         void CreateBase()
@@ -102,16 +101,6 @@ namespace Scripting.Terrain_Generation
             mesh.vertices = heightMapper.ApplyHeightMap(
                 transform.position + new Vector3(Time.time * speed, 0, Time.time * speed), vertices, xSize, zSize);
             mesh.triangles = triangles;
-
-            minTerrainHeight = Single.MaxValue;
-            maxTerrainHeight = Single.MinValue;
-            foreach (var vertex in mesh.vertices)
-            {
-                if (vertex.y < minTerrainHeight)
-                    minTerrainHeight = vertex.y;
-                if (vertex.y > maxTerrainHeight)
-                    maxTerrainHeight = vertex.y;
-            }
         }
 
         public void UpdateColors(float min, float max)
