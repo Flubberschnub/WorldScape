@@ -4,11 +4,6 @@ namespace Scripting.Terrain_Generation
 
     public class ChunkGenerator : MonoBehaviour
     {
-
-        // size of the chunks in vertices
-        public int chunkSizeX = 20;
-        public int chunkSizeZ = 20;
-
         // resolution of vertices (how many units per vertex)
         public float chunkResolutionX = 1f;
         public float chunkResolutionZ = 1f;
@@ -26,7 +21,7 @@ namespace Scripting.Terrain_Generation
 
         public GameObject emptyChunkPrefab;
 
-        public GameObject GenerateSingleChunk(int chunkX, int chunkZ)
+        public GameObject GenerateSingleChunk(int chunkX, int chunkZ, int chunkSizeX, int chunkSizeZ)
         {
             // Calculate world position
             Vector3 position = new Vector3(

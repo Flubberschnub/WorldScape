@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Scripting.Terrain_Generation
+﻿namespace Scripting.Terrain_Generation
 {
     using UnityEngine;
     using System.Collections.Generic;
@@ -9,8 +7,8 @@ namespace Scripting.Terrain_Generation
     {
         public Transform cameraTransform;
         private ChunkGenerator chunkGenerator;
-        public float chunkWorldSizeX = 20f;
-        public float chunkWorldSizeZ = 20f;
+        public int chunkWorldSizeX = 20;
+        public int chunkWorldSizeZ = 20;
         public int viewDistance = 1; // how many chunks around the player to keep loaded
 
         private Dictionary<Vector2Int, GameObject> loadedChunks = new Dictionary<Vector2Int, GameObject>();
@@ -48,7 +46,7 @@ namespace Scripting.Terrain_Generation
                     Vector2Int coord = new Vector2Int(currentChunkCoord.x + x, currentChunkCoord.y + z);
                     if (!loadedChunks.ContainsKey(coord))
                     {
-                        GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y);
+                        GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ);
                         loadedChunks.Add(coord, newChunk);
                     }
                 }
