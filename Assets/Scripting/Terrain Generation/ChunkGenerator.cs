@@ -1,79 +1,79 @@
-using UnityEngine;
-
-public class ChunkGenerator : MonoBehaviour
+namespace Scripting.Terrain_Generation
 {
+    using UnityEngine;
 
-    // size of the chunks in vertices
-    public int chunkSizeX = 20;
-    public int chunkSizeZ = 20;
-
-    // resolution of vertices (how many units per vertex)
-    public float chunkResolutionX = 1f;
-    public float chunkResolutionZ = 1f;
-
-    // size of the total terrain in chunks
-    public int xSize = 20;
-    public int zSize = 20;
-
-    public HeightMapper heightMapper;
-
-    public bool realTimeUpdate = false;
-
-    private GameObject[] chunks;
-
-    public GameObject emptyChunkPrefab;
-
-    public void GenerateChunks()
+    public class ChunkGenerator : MonoBehaviour
     {
-        chunks = new GameObject[xSize * zSize];
 
-        for (int z = 0; z < zSize; z++)
+        // size of the chunks in vertices
+        public int chunkSizeX = 20;
+        public int chunkSizeZ = 20;
+
+        // resolution of vertices (how many units per vertex)
+        public float chunkResolutionX = 1f;
+        public float chunkResolutionZ = 1f;
+
+        public float speed;
+
+        public HeightMapper heightMapper;
+
+        public bool realTimeUpdate;
+
+        public Gradient gradient;
+
+        public float globalMinHeight = 0f;
+        public float globalMaxHeight = 80f;
+
+        public GameObject emptyChunkPrefab;
+
+        public GameObject GenerateSingleChunk(int chunkX, int chunkZ)
         {
-            for (int x = 0; x < xSize; x++)
-            {
-                // Instantiate as a child of the current object
-                GameObject chunk = Instantiate(emptyChunkPrefab, new Vector3(x * chunkSizeX * chunkResolutionX, 0, z * chunkSizeZ * chunkResolutionZ), Quaternion.identity, transform);
-                chunk.GetComponent<MeshGenerator>().xSize = chunkSizeX;
-                chunk.GetComponent<MeshGenerator>().zSize = chunkSizeZ;
-                chunk.GetComponent<MeshGenerator>().xResolution = chunkResolutionX;
-                chunk.GetComponent<MeshGenerator>().zResolution = chunkResolutionZ;
-                chunk.GetComponent<MeshGenerator>().heightMapper = heightMapper;
-                chunk.GetComponent<MeshGenerator>().realTimeUpdate = realTimeUpdate;
-                chunks[z * xSize + x] = chunk;
+            // Calculate world position
+            Vector3 position = new Vector3(
+                chunkX * chunkSizeX * chunkResolutionX,
+                0f,
+                chunkZ * chunkSizeZ * chunkResolutionZ
+            );
 
-                chunk.GetComponent<MeshGenerator>().Create();
-            }
+            // Instantiate chunk
+            GameObject newChunk = Instantiate(emptyChunkPrefab, position, Quaternion.identity, transform);
+
+            // Configure mesh generator
+            MeshGenerator mg = newChunk.GetComponent<MeshGenerator>();
+            mg.xSize = chunkSizeX;
+            mg.zSize = chunkSizeZ;
+            mg.xResolution = chunkResolutionX;
+            mg.zResolution = chunkResolutionZ;
+            mg.heightMapper = heightMapper;
+            mg.realTimeUpdate = realTimeUpdate;
+            mg.gradient = gradient;
+            mg.speed = speed;
+            mg.minTerrainHeight = globalMinHeight;
+            mg.maxTerrainHeight = globalMaxHeight;
+
+            // Create mesh
+            mg.Create();
+            return newChunk;
         }
-    }
 
-    public void ClearChunks()
-    {
-        foreach (GameObject chunk in chunks)
+        public GameObject GenerateEmptyChunkPrefab()
         {
-            DestroyImmediate(chunk);
+            GameObject emptyChunk = new GameObject("ChunkPrefab");
+            emptyChunk.AddComponent<MeshFilter>();
+            emptyChunk.AddComponent<MeshRenderer>();
+            emptyChunk.AddComponent<MeshGenerator>();
+
+            emptyChunk.GetComponent<MeshFilter>().mesh = Resources.GetBuiltinResource<Mesh>("New-Plane.fbx");
+
+            emptyChunk.GetComponent<MeshRenderer>().material = new Material(Shader.Find("Custom/HeightmapColorShader"));
+
+            return emptyChunk;
         }
-    }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        // if (realTimeUpdate)
-        // {
-        //     if (chunks != null)
-        //     {
-        //         foreach (GameObject chunk in chunks)
-        //         {
-        //             Destroy(chunk);
-        //         }
-        //         GenerateChunks();
-        //     }
-        // }
-
+        void Start()
+        {
+            emptyChunkPrefab = GenerateEmptyChunkPrefab();
+            // GenerateChunks();
+        }
     }
 }
