@@ -26,7 +26,7 @@
             float x = vertex.x + positionOffset.x;
             float z = vertex.z + positionOffset.z;
             float sampleX = (x + offsetX) * xScale;
-            float sampleZ = (x + offsetZ) * zScale;
+            float sampleZ = (z + offsetZ) * zScale;
             float y = FractalPerlinNoise(sampleX, sampleZ) * amplitude;
 
             vertices[index] = new Vector3(vertex.x, y, vertex.z);

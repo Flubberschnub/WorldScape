@@ -50,12 +50,12 @@ namespace Scripting.Terrain_Generation
                 positionOffset = transform.position,
                 offsetX = offsetX,
                 offsetZ = offsetZ,
-                xScale = 1f,
-                zScale = 1f,
-                amplitude = 1f,
+                xScale = 0.007f,
+                zScale = 0.007f,
+                amplitude = 60f,
                 persistence = 0.5f,
                 lacunarity = 2f,
-                octaves = 4
+                octaves = 5
             };
 
             // Schedule and run the Job
