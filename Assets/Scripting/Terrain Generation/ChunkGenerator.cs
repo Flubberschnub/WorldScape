@@ -7,18 +7,14 @@ namespace Scripting.Terrain_Generation
         // resolution of vertices (how many units per vertex)
         public float chunkResolutionX = 1f;
         public float chunkResolutionZ = 1f;
-
-        public float speed;
-
-        public HeightMapper heightMapper;
-
-        public bool realTimeUpdate;
+        public float offsetX;
+        public float offsetZ;
 
         public Gradient gradient;
 
         public float globalMinHeight = 0f;
         public float globalMaxHeight = 80f;
-
+        
         public GameObject emptyChunkPrefab;
 
         public GameObject GenerateSingleChunk(int chunkX, int chunkZ, int chunkSizeX, int chunkSizeZ)
@@ -37,12 +33,11 @@ namespace Scripting.Terrain_Generation
             MeshGenerator mg = newChunk.GetComponent<MeshGenerator>();
             mg.xSize = chunkSizeX;
             mg.zSize = chunkSizeZ;
+            mg.offsetX = offsetX;
+            mg.offsetZ = offsetZ;
             mg.xResolution = chunkResolutionX;
             mg.zResolution = chunkResolutionZ;
-            mg.heightMapper = heightMapper;
-            mg.realTimeUpdate = realTimeUpdate;
             mg.gradient = gradient;
-            mg.speed = speed;
             mg.minTerrainHeight = globalMinHeight;
             mg.maxTerrainHeight = globalMaxHeight;
 

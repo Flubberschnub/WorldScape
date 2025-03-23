@@ -10,13 +10,15 @@
         public int chunkWorldSizeX = 20;
         public int chunkWorldSizeZ = 20;
         public int viewDistance = 1; // how many chunks around the player to keep loaded
-
+        
         private Dictionary<Vector2Int, GameObject> loadedChunks = new Dictionary<Vector2Int, GameObject>();
         private Vector2Int currentChunkCoord;
 
         private void Start()
         {
             chunkGenerator = GetComponent<ChunkGenerator>();
+            chunkGenerator.offsetX = Random.Range(0f, 9999999f);
+            chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
         }
 
         void Update()
