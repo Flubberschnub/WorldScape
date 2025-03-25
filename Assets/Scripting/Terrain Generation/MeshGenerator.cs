@@ -1,8 +1,11 @@
+using Scripting.Jobs;
+using Unity.Collections;
+using Unity.Jobs;
+using UnityEngine;
+
+
 namespace Scripting.Terrain_Generation
 {
-    using System;
-    using UnityEngine;
-
     [ExecuteInEditMode]
     public class MeshGenerator : MonoBehaviour
     {
@@ -13,8 +16,6 @@ namespace Scripting.Terrain_Generation
         int[] triangles;
         Color[] colors;
 
-        public bool realTimeUpdate = false;
-
         // resolution of vertices (how many units per vertex)
         public float xResolution = 1f;
         public float zResolution = 1f;
@@ -22,15 +23,14 @@ namespace Scripting.Terrain_Generation
         // size of the mesh in vertices
         public int xSize = 20;
         public int zSize = 20;
-
-        public float speed;
+        
+        public float offsetX;
+        public float offsetZ;
 
         public Gradient gradient;
 
         public float minTerrainHeight;
         public float maxTerrainHeight;
-
-        public HeightMapper heightMapper;
 
         public void Create()
         {
@@ -38,8 +38,32 @@ namespace Scripting.Terrain_Generation
             GetComponent<MeshFilter>().mesh = mesh;
 
             CreateBase();
-            UpdateVertices();
+            
+            NativeArray<Vector3> verticesNative = new NativeArray<Vector3>(vertices, Allocator.TempJob);
+
+            FractalPerlinNoiseHeightMapJob job = new FractalPerlinNoiseHeightMapJob
+            {
+                vertices = verticesNative,
+                positionOffset = transform.position,
+                offsetX = offsetX,
+                offsetZ = offsetZ,
+                xScale = 0.007f,
+                zScale = 0.007f,
+                amplitude = 60f,
+                persistence = 0.5f,
+                lacunarity = 2f,
+                octaves = 5
+            };
+
+            JobHandle handle = job.Schedule(vertices.Length, 64);
+            handle.Complete();
+            
+            mesh.vertices = verticesNative.ToArray();
+            mesh.triangles = triangles;
+            
             UpdateColors(minTerrainHeight, maxTerrainHeight);
+            
+            verticesNative.Dispose();
         }
 
         void CreateBase()
@@ -94,15 +118,6 @@ namespace Scripting.Terrain_Generation
 
         }
 
-        public void UpdateVertices()
-        {
-            mesh.Clear();
-
-            mesh.vertices = heightMapper.ApplyHeightMap(
-                transform.position + new Vector3(Time.time * speed, 0, Time.time * speed), vertices, xSize, zSize);
-            mesh.triangles = triangles;
-        }
-
         public void UpdateColors(float min, float max)
         {
             for (int i = 0; i < mesh.vertices.Length; i++)
@@ -115,7 +130,6 @@ namespace Scripting.Terrain_Generation
             mesh.colors = colors;
 
             mesh.RecalculateNormals();
-
         }
 
         void OnDrawGizmos()

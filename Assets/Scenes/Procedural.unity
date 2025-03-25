@@ -151,9 +151,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chunkResolutionX: 1
   chunkResolutionZ: 1
-  speed: 0
-  heightMapper: {fileID: 11400000, guid: 57f5b5e608c9084449960390a6e3e0e5, type: 2}
-  realTimeUpdate: 0
+  offsetX: 0
+  offsetZ: 0
   gradient:
     serializedVersion: 2
     key0: {r: 0, g: 1, b: 0.22419739, a: 1}

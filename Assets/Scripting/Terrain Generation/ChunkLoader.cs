@@ -1,8 +1,8 @@
-﻿namespace Scripting.Terrain_Generation
-{
-    using UnityEngine;
-    using System.Collections.Generic;
+﻿using UnityEngine;
+using System.Collections.Generic;
 
+namespace Scripting.Terrain_Generation
+{
     public class ChunkLoader : MonoBehaviour
     {
         public Transform cameraTransform;
@@ -10,13 +10,15 @@
         public int chunkWorldSizeX = 20;
         public int chunkWorldSizeZ = 20;
         public int viewDistance = 1; // how many chunks around the player to keep loaded
-
+        
         private Dictionary<Vector2Int, GameObject> loadedChunks = new Dictionary<Vector2Int, GameObject>();
         private Vector2Int currentChunkCoord;
 
         private void Start()
         {
             chunkGenerator = GetComponent<ChunkGenerator>();
+            chunkGenerator.offsetX = Random.Range(0f, 9999999f);
+            chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
         }
 
         void Update()
@@ -62,7 +64,7 @@
                 int distZ = Mathf.Abs(kvp.Key.y - currentChunkCoord.y);
                 if (distX > viewDistance || distZ > viewDistance)
                 {
-                    Destroy(kvp.Value);
+                    chunkGenerator.chunkPool.Return(kvp.Value);
                     toRemove.Add(kvp.Key);
                 }
             }
