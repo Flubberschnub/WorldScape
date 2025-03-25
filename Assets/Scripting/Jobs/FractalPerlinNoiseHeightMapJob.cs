@@ -1,10 +1,10 @@
-﻿namespace Scripting.Jobs
-{
-    using Unity.Burst;
-    using Unity.Collections;
-    using Unity.Jobs;
-    using UnityEngine;
+﻿using Unity.Burst;
+using Unity.Collections;
+using Unity.Jobs;
+using UnityEngine;
 
+namespace Scripting.Jobs
+{
     [BurstCompile]
     public struct FractalPerlinNoiseHeightMapJob : IJobParallelFor
     {

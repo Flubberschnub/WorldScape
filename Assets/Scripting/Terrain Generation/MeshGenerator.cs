@@ -1,12 +1,11 @@
 using Scripting.Jobs;
 using Unity.Collections;
 using Unity.Jobs;
+using UnityEngine;
+
 
 namespace Scripting.Terrain_Generation
 {
-    using System;
-    using UnityEngine;
-
     [ExecuteInEditMode]
     public class MeshGenerator : MonoBehaviour
     {
@@ -40,10 +39,8 @@ namespace Scripting.Terrain_Generation
 
             CreateBase();
             
-            // Allocate Native Arrays (must dispose later)
             NativeArray<Vector3> verticesNative = new NativeArray<Vector3>(vertices, Allocator.TempJob);
 
-            // Initialize Job
             FractalPerlinNoiseHeightMapJob job = new FractalPerlinNoiseHeightMapJob
             {
                 vertices = verticesNative,
@@ -58,17 +55,14 @@ namespace Scripting.Terrain_Generation
                 octaves = 5
             };
 
-            // Schedule and run the Job
             JobHandle handle = job.Schedule(vertices.Length, 64);
             handle.Complete();
             
-            // Apply computed vertices on main thread
             mesh.vertices = verticesNative.ToArray();
             mesh.triangles = triangles;
             
             UpdateColors(minTerrainHeight, maxTerrainHeight);
             
-            // Dispose Native Arrays
             verticesNative.Dispose();
         }
 

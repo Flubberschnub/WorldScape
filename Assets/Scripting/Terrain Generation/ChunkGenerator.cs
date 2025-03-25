@@ -1,7 +1,7 @@
+using UnityEngine;
+
 namespace Scripting.Terrain_Generation
 {
-    using UnityEngine;
-
     public class ChunkGenerator : MonoBehaviour
     {
         // resolution of vertices (how many units per vertex)

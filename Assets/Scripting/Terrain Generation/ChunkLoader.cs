@@ -1,8 +1,8 @@
-﻿namespace Scripting.Terrain_Generation
-{
-    using UnityEngine;
-    using System.Collections.Generic;
+﻿using UnityEngine;
+using System.Collections.Generic;
 
+namespace Scripting.Terrain_Generation
+{
     public class ChunkLoader : MonoBehaviour
     {
         public Transform cameraTransform;
