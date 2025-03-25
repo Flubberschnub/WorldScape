@@ -64,7 +64,7 @@ namespace Scripting.Terrain_Generation
                 int distZ = Mathf.Abs(kvp.Key.y - currentChunkCoord.y);
                 if (distX > viewDistance || distZ > viewDistance)
                 {
-                    Destroy(kvp.Value);
+                    chunkGenerator.chunkPool.Return(kvp.Value);
                     toRemove.Add(kvp.Key);
                 }
             }
