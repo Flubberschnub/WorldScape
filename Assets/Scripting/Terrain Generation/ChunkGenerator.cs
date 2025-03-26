@@ -18,6 +18,24 @@ namespace Scripting.Terrain_Generation
         public GameObject emptyChunkPrefab;
         public ChunkPool chunkPool;
 
+        /// Generates a single chunk at the specified world position and configures its properties for terrain generation.
+        /// The method calculates world coordinates for the chunk based on input parameters, retrieves a pooled chunk object,
+        /// and sets its position, rotation, and mesh generation parameters. It finalizes by creating the mesh for the chunk.
+        /// <param name="chunkX">
+        /// The X-coordinate of the chunk in the chunk grid.
+        /// </param>
+        /// <param name="chunkZ">
+        /// The Z-coordinate of the chunk in the chunk grid.
+        /// </param>
+        /// <param name="chunkSizeX">
+        /// The size of the chunk along the X-axis in units.
+        /// </param>
+        /// <param name="chunkSizeZ">
+        /// The size of the chunk along the Z-axis in units.
+        /// </param>
+        /// <returns>
+        /// Returns a GameObject representing the newly generated and configured chunk.
+        /// </returns>
         public GameObject GenerateSingleChunk(int chunkX, int chunkZ, int chunkSizeX, int chunkSizeZ)
         {
             // Calculate world position
@@ -49,6 +67,12 @@ namespace Scripting.Terrain_Generation
             return pooledChunk;
         }
 
+        /// Generates a GameObject representing an empty chunk prefab with default components necessary for terrain generation.
+        /// The method creates a new GameObject, adds essential components such as MeshFilter, MeshRenderer, and MeshGenerator,
+        /// and assigns a built-in plane mesh and a custom shader material for rendering.
+        /// <returns>
+        /// Returns a GameObject configured as an empty chunk prefab with default properties.
+        /// </returns>
         public GameObject GenerateEmptyChunkPrefab()
         {
             GameObject emptyChunk = new GameObject("ChunkPrefab");
@@ -67,8 +91,6 @@ namespace Scripting.Terrain_Generation
         {
             emptyChunkPrefab = GenerateEmptyChunkPrefab();
             chunkPool = new ChunkPool(emptyChunkPrefab, transform, 25);
-
-            // GenerateChunks();
         }
     }
 }

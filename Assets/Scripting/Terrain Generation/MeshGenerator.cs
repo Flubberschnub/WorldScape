@@ -32,6 +32,17 @@ namespace Scripting.Terrain_Generation
         public float minTerrainHeight;
         public float maxTerrainHeight;
 
+        /// <summary>
+        /// Generates a mesh with procedural terrain based on fractal Perlin noise, updating the mesh data
+        /// (vertices, triangles) and visual properties (colors) for the assigned MeshFilter.
+        /// </summary>
+        /// <remarks>
+        /// This method initializes the mesh, generates a base grid of vertices, and assigns it to
+        /// a Mesh object. It employs a parallelized job system to calculate the heightmap using
+        /// fractal Perlin noise, enhancing performance for large-scale terrain generation. Once
+        /// the computations are complete, the updated vertices and triangles are applied to
+        /// the mesh, and the terrain colors are updated to reflect height-based gradients.
+        /// </remarks>
         public void Create()
         {
             mesh = new Mesh();
@@ -39,8 +50,8 @@ namespace Scripting.Terrain_Generation
 
             CreateBase();
             
+            // Uses NativeArray for thread safety and optimal performance during parallelization.
             NativeArray<Vector3> verticesNative = new NativeArray<Vector3>(vertices, Allocator.TempJob);
-
             FractalPerlinNoiseHeightMapJob job = new FractalPerlinNoiseHeightMapJob
             {
                 vertices = verticesNative,
@@ -54,7 +65,6 @@ namespace Scripting.Terrain_Generation
                 lacunarity = 2f,
                 octaves = 5
             };
-
             JobHandle handle = job.Schedule(vertices.Length, 64);
             handle.Complete();
             
@@ -66,6 +76,16 @@ namespace Scripting.Terrain_Generation
             verticesNative.Dispose();
         }
 
+        /// <summary>
+        /// Initializes the base structure of the mesh, including vertices, triangles, and colors,
+        /// to represent a grid of defined resolution and size.
+        /// </summary>
+        /// <remarks>
+        /// This method calculates the positions of vertices based on the specified x and z dimensions
+        /// and resolution, forming the initial grid. It creates the indices for mesh triangles to
+        /// define the connectivity of the geometry. Additionally, it applies a gradient color to each
+        /// vertex based on its height relative to the given minimum and maximum terrain height values.
+        /// </remarks>
         void CreateBase()
         {
 
@@ -104,7 +124,8 @@ namespace Scripting.Terrain_Generation
 
                 vert++;
             }
-
+            
+            // Assign colors based on height using an inverse lerp to map the height to a gradient color.
             colors = new Color[vertices.Length];
             for (int i = 0, z = 0; z <= zSize; z++)
             {
@@ -118,6 +139,17 @@ namespace Scripting.Terrain_Generation
 
         }
 
+        /// <summary>
+        /// Updates the mesh vertex colors based on their height relative to the
+        /// specified minimum and maximum terrain height values.
+        /// </summary>
+        /// <param name="min">The minimum height value used for color evaluation.</param>
+        /// <param name="max">The maximum height value used for color evaluation.</param>
+        /// <remarks>
+        /// This method utilizes a gradient to map the height of each vertex to a color
+        /// and assigns the resulting colors to the mesh. It also recalculates the normals
+        /// for the mesh to ensure accurate shading after updating the colors.
+        /// </remarks>
         public void UpdateColors(float min, float max)
         {
             for (int i = 0; i < mesh.vertices.Length; i++)
