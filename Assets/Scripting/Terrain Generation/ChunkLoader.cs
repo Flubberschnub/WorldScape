@@ -11,7 +11,7 @@ namespace Scripting.Terrain_Generation
         public int chunkWorldSizeZ = 20;
         public int viewDistance = 1; // how many chunks around the player to keep loaded
         
-        private Dictionary<Vector2Int, GameObject> loadedChunks;
+        private Dictionary<Vector2Int, GameObject> loadedChunks = new Dictionary<Vector2Int, GameObject>();
         private Vector2Int currentChunkCoord;
 
         private void Start()
