@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 270231147}
   - component: {fileID: 270231146}
   - component: {fileID: 270231145}
+  - component: {fileID: 270231148}
   m_Layer: 0
   m_Name: Terrain Generator
   m_TagString: Untagged
@@ -217,6 +218,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &270231148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 270231144}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cc4e85d726b4803b897ad5c766dcd4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  environmentObjects:
+  - {fileID: 919132149155446097, guid: e2a25b01a7bc0274aa66854ec27b3e03, type: 3}
+  - {fileID: 919132149155446097, guid: c16c18405c418ec4e851391a63665602, type: 3}
+  - {fileID: 919132149155446097, guid: db181e4091e6a804da1f996445bf0d64, type: 3}
+  - {fileID: 919132149155446097, guid: 064cfbd5eae459c449b86bdcbd144307, type: 3}
+  - {fileID: 919132149155446097, guid: 8f1fbcffeb2d6694c883052b498ad406, type: 3}
+  - {fileID: 919132149155446097, guid: f1660031167d52747bc0e05b5ecb832c, type: 3}
+  - {fileID: 919132149155446097, guid: 5c0e10448184b1a45ba6975db5627524, type: 3}
+  - {fileID: 919132149155446097, guid: f0083ee6c601e024895f38d542356065, type: 3}
+  objectCount: 100
+  chunkLoader: {fileID: 270231146}
 --- !u!1 &418101091
 GameObject:
   m_ObjectHideFlags: 0

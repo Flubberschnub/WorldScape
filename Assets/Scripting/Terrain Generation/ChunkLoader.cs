@@ -7,6 +7,7 @@ namespace Scripting.Terrain_Generation
     {
         public Transform cameraTransform;
         private ChunkGenerator chunkGenerator;
+        private TerrainObjectScatterer terrainObjectScatterer;
         public int chunkWorldSizeX = 20;
         public int chunkWorldSizeZ = 20;
         public int viewDistance = 1; // how many chunks around the player to keep loaded
@@ -17,6 +18,7 @@ namespace Scripting.Terrain_Generation
         private void Start()
         {
             chunkGenerator = GetComponent<ChunkGenerator>();
+            terrainObjectScatterer = GetComponent<TerrainObjectScatterer>();
             
             // Set initial random offsets to perlin noise to ensure unique terrain generation
             chunkGenerator.offsetX = Random.Range(0f, 9999999f);
@@ -31,6 +33,7 @@ namespace Scripting.Terrain_Generation
                 currentChunkCoord = newChunkCoord;
                 LoadNearbyChunks();
                 UnloadDistantChunks();
+                terrainObjectScatterer.ScatterObjects(GetLoadedChunks());
             }
         }
 
@@ -94,6 +97,17 @@ namespace Scripting.Terrain_Generation
             {
                 loadedChunks.Remove(coord);
             }
+        }
+        
+        public List<GameObject> GetLoadedChunks()
+        {
+            List<GameObject> chunks = new List<GameObject>();
+            foreach (var kvp in loadedChunks)
+            {
+                chunks.Add(kvp.Value);
+            }
+
+            return chunks;
         }
     }
 }
