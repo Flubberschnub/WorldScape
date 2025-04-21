@@ -239,8 +239,7 @@ MonoBehaviour:
   - {fileID: 919132149155446097, guid: f1660031167d52747bc0e05b5ecb832c, type: 3}
   - {fileID: 919132149155446097, guid: 5c0e10448184b1a45ba6975db5627524, type: 3}
   - {fileID: 919132149155446097, guid: f0083ee6c601e024895f38d542356065, type: 3}
-  objectCount: 100
-  chunkLoader: {fileID: 270231146}
+  objectCount: 0.01
 --- !u!1 &418101091
 GameObject:
   m_ObjectHideFlags: 0

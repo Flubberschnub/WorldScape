@@ -33,7 +33,6 @@ namespace Scripting.Terrain_Generation
                 currentChunkCoord = newChunkCoord;
                 LoadNearbyChunks();
                 UnloadDistantChunks();
-                terrainObjectScatterer.ScatterObjects(GetLoadedChunks());
             }
         }
 
@@ -97,17 +96,6 @@ namespace Scripting.Terrain_Generation
             {
                 loadedChunks.Remove(coord);
             }
-        }
-        
-        public List<GameObject> GetLoadedChunks()
-        {
-            List<GameObject> chunks = new List<GameObject>();
-            foreach (var kvp in loadedChunks)
-            {
-                chunks.Add(kvp.Value);
-            }
-
-            return chunks;
         }
     }
 }

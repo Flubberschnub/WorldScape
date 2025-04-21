@@ -6,30 +6,44 @@ namespace Scripting.Terrain_Generation
     public class TerrainObjectScatterer : MonoBehaviour
     {
         public GameObject[] environmentObjects;
-        public int objectCount = 100;
+        public float objectCount = 1;
 
-        public void ScatterObjects(List<GameObject> loadedChunks)
+        public void ScatterObjects(GameObject chunk)
         {
-            foreach (var chunk in loadedChunks)
+            if (objectCount < 1)
+                if (Random.Range(0f, 1f) > objectCount)
+                    return;
+                
+            MeshGenerator meshGenerator = chunk.GetComponent<MeshGenerator>();
+            Mesh mesh = meshGenerator.GetComponent<MeshFilter>().mesh;
+            Vector3[] vertices = mesh.vertices;
+            
+            int count = 0;
+            foreach (Transform child in chunk.transform)
             {
-                MeshGenerator meshGenerator = chunk.GetComponent<MeshGenerator>();
-                Mesh mesh = meshGenerator.GetComponent<MeshFilter>().mesh;
-                Vector3[] vertices = mesh.vertices;
-
-                for (int i = 0; i < objectCount; i++)
+                // Reposition existing children to scatter locations
+                if (count < objectCount)
                 {
-                    // Generate random position within the chunk bounds
-                    float randomX = Random.Range(0, meshGenerator.xSize * meshGenerator.xResolution);
-                    float randomZ = Random.Range(0, meshGenerator.zSize * meshGenerator.zResolution);
-
-                    // Find the closest vertex to determine the height
-                    Vector3 closestVertex = FindClosestVertex(vertices, randomX, randomZ, meshGenerator.transform.position);
-
-                    // Instantiate the object at the calculated position
-                    GameObject selectedObject = environmentObjects[Random.Range(0, environmentObjects.Length)];
-                    Instantiate(selectedObject, closestVertex, Quaternion.identity, chunk.transform);
+                    Vector3 randomPoint = GenerateRandomPointOnChunk(vertices, meshGenerator);
+                    child.position = randomPoint;
+                    child.gameObject.SetActive(true);
+                    count++;
+                }
+                else
+                {
+                    // Deactivate extra pooled objects
+                    child.gameObject.SetActive(false);
                 }
             }
+
+            for (; count < objectCount; count++)
+            {
+                // Instantiate or retrieve new pooled objects
+                Vector3 randomPoint = GenerateRandomPointOnChunk(vertices, meshGenerator);
+                GameObject selectedObject = environmentObjects[Random.Range(0, environmentObjects.Length)];
+                GameObject obj = Instantiate(selectedObject, randomPoint, Quaternion.identity, chunk.transform);
+            }
+
         }
 
         Vector3 FindClosestVertex(Vector3[] vertices, float x, float z, Vector3 chunkPosition)
@@ -50,5 +64,13 @@ namespace Scripting.Terrain_Generation
 
             return closest;
         }
+        
+        private Vector3 GenerateRandomPointOnChunk(Vector3[] vertices, MeshGenerator meshGenerator)
+        {
+            float randomX = Random.Range(0, meshGenerator.xSize * meshGenerator.xResolution);
+            float randomZ = Random.Range(0, meshGenerator.zSize * meshGenerator.zResolution);
+            return FindClosestVertex(vertices, randomX, randomZ, meshGenerator.transform.position);
+        }
+
     }
 }
