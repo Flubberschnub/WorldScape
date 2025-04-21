@@ -5,10 +5,16 @@ namespace Scripting.Terrain_Generation
 {
     public class TerrainObjectScatterer : MonoBehaviour
     {
-        public GameObject[] environmentObjects;
+        public GameObject[] environmentObjects; // Should contain prefabs of objects to scatter. Can be set in the inspector for now.
         public float worldScatterDensity = 0.1f;
         private System.Random seededRandom;
-        
+
+        /// Scatters objects randomly onto a specified terrain chunk using predefined rules
+        /// and weighted selection based on terrain height and a seeded random generator.
+        /// <param name="chunk">
+        /// The terrain chunk GameObject on which objects will be scattered. The chunk
+        /// must have a MeshGenerator component to provide terrain height and vertex data.
+        /// </param>
         public void ScatterObjects(GameObject chunk)
         {
             // Seed the random generator based on chunk position
@@ -50,6 +56,23 @@ namespace Scripting.Terrain_Generation
             Instantiate(selectedObject, randomPoint, randomRotation, chunk.transform);
         }
 
+        /// Finds the closest vertex within a set of vertices to the given x and z coordinates,
+        /// considering the position of the chunk in world space.
+        /// <param name="vertices">
+        /// An array of vertices representing points on the mesh in local coordinates.
+        /// </param>
+        /// <param name="x">
+        /// The x coordinate in world space to find the closest vertex to.
+        /// </param>
+        /// <param name="z">
+        /// The z coordinate in world space to find the closest vertex to.
+        /// </param>
+        /// <param name="chunkPosition">
+        /// The position of the chunk in world space, used to translate vertices to world coordinates.
+        /// </param>
+        /// <returns>
+        /// The closest vertex in world space to the specified x and z coordinates.
+        /// </returns>
         Vector3 FindClosestVertex(Vector3[] vertices, float x, float z, Vector3 chunkPosition)
         {
             Vector3 closest = Vector3.zero;
@@ -68,7 +91,18 @@ namespace Scripting.Terrain_Generation
 
             return closest;
         }
-        
+
+        /// Generates a random point on the specified chunk using the vertex data and chunk configuration.
+        /// <param name="vertices">
+        /// An array of vertices representing the points on the mesh in local coordinates.
+        /// </param>
+        /// <param name="meshGenerator">
+        /// The MeshGenerator instance associated with the chunk, providing information such as size,
+        /// resolution, and transformation data.
+        /// </param>
+        /// <returns>
+        /// A Vector3 position in world space representing a randomly selected point on the chunk.
+        /// </returns>
         private Vector3 GenerateRandomPointOnChunk(Vector3[] vertices, MeshGenerator meshGenerator)
         {
             // Use seeded random to generate consistent random values
@@ -77,6 +111,5 @@ namespace Scripting.Terrain_Generation
 
             return FindClosestVertex(vertices, randomX, randomZ, meshGenerator.transform.position);
         }
-
     }
 }

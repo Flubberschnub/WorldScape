@@ -25,7 +25,7 @@ namespace Scripting.Terrain_Generation
             chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
         }
 
-        void Update()
+        private void Update()
         {
             Vector2Int newChunkCoord = GetChunkCoord(cameraTransform.position);
             if (newChunkCoord != currentChunkCoord)
@@ -51,11 +51,9 @@ namespace Scripting.Terrain_Generation
         }
 
         /// <summary>
-        /// Loads the nearby chunks centered around the current chunk coordinate.
-        /// Loops within the defined view distance along both x and z axes to ensure that
-        /// all chunks within the view distance are loaded. If a chunk at a specific coordinate
-        /// is not already loaded, it requests the chunk from the ChunkGenerator and records it
-        /// in the loadedChunks dictionary.
+        /// Loads all chunks surrounding the player's current chunk position, within the specified view distance.
+        /// Chunks that are not yet loaded are instantiated using the chunk generator, and any necessary terrain
+        /// objects are scattered onto them. Loaded chunks are added to the dictionary for management.
         /// </summary>
         void LoadNearbyChunks()
         {
@@ -75,10 +73,10 @@ namespace Scripting.Terrain_Generation
         }
 
         /// <summary>
-        /// Unloads chunks that are beyond the defined view distance from the current chunk coordinate.
-        /// Iterates through the loadedChunks dictionary to identify chunks that exceed the view distance
-        /// along either the x or z axis. Removes these distant chunks by returning them to the ChunkPool
-        /// and removing their references from the loadedChunks dictionary.
+        /// Unloads chunks that are outside the player's view distance to free up resources.
+        /// This is determined by calculating the distance between the current chunk coordinates
+        /// and the coordinates of each loaded chunk. If a chunk lies beyond the specified view distance,
+        /// it is removed from the dictionary of loaded chunks, deactivated, and returned to the chunk pool.
         /// </summary>
         void UnloadDistantChunks()
         {
