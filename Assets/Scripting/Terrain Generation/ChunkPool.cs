@@ -53,13 +53,6 @@ namespace Scripting.Terrain_Generation
         {
             // Deactivate the chunk and its children
             chunk.SetActive(false);
-    
-            // Ensure scattered objects remain in their respective chunks
-            foreach (Transform child in chunk.transform)
-            {
-                child.gameObject.SetActive(false);
-            }
-
             pool.Push(chunk);
         }
 

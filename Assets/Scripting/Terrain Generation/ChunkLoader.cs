@@ -27,7 +27,7 @@ namespace Scripting.Terrain_Generation
 
         void Update()
         {
-            var newChunkCoord = GetChunkCoord(cameraTransform.position);
+            Vector2Int newChunkCoord = GetChunkCoord(cameraTransform.position);
             if (newChunkCoord != currentChunkCoord)
             {
                 currentChunkCoord = newChunkCoord;
@@ -67,6 +67,7 @@ namespace Scripting.Terrain_Generation
                     if (!loadedChunks.ContainsKey(coord))
                     {
                         GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ);
+                        terrainObjectScatterer.ScatterObjects(newChunk);
                         loadedChunks.Add(coord, newChunk);
                     }
                 }
@@ -88,6 +89,11 @@ namespace Scripting.Terrain_Generation
                 int distZ = Mathf.Abs(kvp.Key.y - currentChunkCoord.y);
                 if (distX > viewDistance || distZ > viewDistance)
                 {
+                    GameObject chunk = kvp.Value;
+                    foreach (Transform child in chunk.transform)
+                    {
+                        child.gameObject.SetActive(false); // Deactivate scattered objects
+                    }
                     chunkGenerator.chunkPool.Return(kvp.Value);
                     toRemove.Add(kvp.Key);
                 }

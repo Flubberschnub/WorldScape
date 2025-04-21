@@ -69,13 +69,6 @@ namespace Scripting.Terrain_Generation
 
             // Create mesh
             mg.Create();
-            
-            TerrainObjectScatterer scatterer = GetComponent<TerrainObjectScatterer>();
-            if (pooledChunk.transform.childCount == 0) // Check if objects already exist
-            {
-                scatterer.ScatterObjects(pooledChunk);
-            }
-            
             return pooledChunk;
         }
 
