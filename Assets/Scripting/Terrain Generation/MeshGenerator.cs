@@ -163,17 +163,5 @@ namespace Scripting.Terrain_Generation
 
             mesh.RecalculateNormals();
         }
-
-        void OnDrawGizmos()
-        {
-            // if (vertices == null)
-            // {
-            //     return;
-            // }
-            // for (int i = 0; i < vertices.Length; i++)
-            // {
-            //     Gizmos.DrawSphere(vertices[i] + transform.position, .1f);
-            // }
-        }
     }
 }

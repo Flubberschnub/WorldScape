@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Scripting.Terrain_Generation
@@ -49,7 +50,7 @@ namespace Scripting.Terrain_Generation
                 chunkZ * chunkSizeZ * chunkResolutionZ
             );
 
-            // Instantiate chunk
+            // Retrieve a chunk from the pool
             GameObject pooledChunk = chunkPool.Get();
             pooledChunk.transform.position = position;
             pooledChunk.transform.rotation = Quaternion.identity;

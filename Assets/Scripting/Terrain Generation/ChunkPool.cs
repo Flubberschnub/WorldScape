@@ -51,8 +51,10 @@ namespace Scripting.Terrain_Generation
         /// <param name="chunk">The GameObject representing the chunk to be returned to the pool.</param>
         public void Return(GameObject chunk)
         {
+            // Deactivate the chunk and its children
             chunk.SetActive(false);
             pool.Push(chunk);
         }
+
     }
 }

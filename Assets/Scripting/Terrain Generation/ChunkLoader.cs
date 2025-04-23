@@ -7,6 +7,7 @@ namespace Scripting.Terrain_Generation
     {
         public Transform cameraTransform;
         private ChunkGenerator chunkGenerator;
+        private TerrainObjectScatterer terrainObjectScatterer;
         public int chunkWorldSizeX = 20;
         public int chunkWorldSizeZ = 20;
         public int viewDistance = 1; // how many chunks around the player to keep loaded
@@ -17,15 +18,16 @@ namespace Scripting.Terrain_Generation
         private void Start()
         {
             chunkGenerator = GetComponent<ChunkGenerator>();
+            terrainObjectScatterer = GetComponent<TerrainObjectScatterer>();
             
             // Set initial random offsets to perlin noise to ensure unique terrain generation
             chunkGenerator.offsetX = Random.Range(0f, 9999999f);
             chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
         }
 
-        void Update()
+        private void Update()
         {
-            var newChunkCoord = GetChunkCoord(cameraTransform.position);
+            Vector2Int newChunkCoord = GetChunkCoord(cameraTransform.position);
             if (newChunkCoord != currentChunkCoord)
             {
                 currentChunkCoord = newChunkCoord;
@@ -49,11 +51,9 @@ namespace Scripting.Terrain_Generation
         }
 
         /// <summary>
-        /// Loads the nearby chunks centered around the current chunk coordinate.
-        /// Loops within the defined view distance along both x and z axes to ensure that
-        /// all chunks within the view distance are loaded. If a chunk at a specific coordinate
-        /// is not already loaded, it requests the chunk from the ChunkGenerator and records it
-        /// in the loadedChunks dictionary.
+        /// Loads all chunks surrounding the player's current chunk position, within the specified view distance.
+        /// Chunks that are not yet loaded are instantiated using the chunk generator, and any necessary terrain
+        /// objects are scattered onto them. Loaded chunks are added to the dictionary for management.
         /// </summary>
         void LoadNearbyChunks()
         {
@@ -65,6 +65,7 @@ namespace Scripting.Terrain_Generation
                     if (!loadedChunks.ContainsKey(coord))
                     {
                         GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ);
+                        terrainObjectScatterer.ScatterObjects(newChunk);
                         loadedChunks.Add(coord, newChunk);
                     }
                 }
@@ -72,10 +73,10 @@ namespace Scripting.Terrain_Generation
         }
 
         /// <summary>
-        /// Unloads chunks that are beyond the defined view distance from the current chunk coordinate.
-        /// Iterates through the loadedChunks dictionary to identify chunks that exceed the view distance
-        /// along either the x or z axis. Removes these distant chunks by returning them to the ChunkPool
-        /// and removing their references from the loadedChunks dictionary.
+        /// Unloads chunks that are outside the player's view distance to free up resources.
+        /// This is determined by calculating the distance between the current chunk coordinates
+        /// and the coordinates of each loaded chunk. If a chunk lies beyond the specified view distance,
+        /// it is removed from the dictionary of loaded chunks, deactivated, and returned to the chunk pool.
         /// </summary>
         void UnloadDistantChunks()
         {
@@ -86,6 +87,11 @@ namespace Scripting.Terrain_Generation
                 int distZ = Mathf.Abs(kvp.Key.y - currentChunkCoord.y);
                 if (distX > viewDistance || distZ > viewDistance)
                 {
+                    GameObject chunk = kvp.Value;
+                    foreach (Transform child in chunk.transform)
+                    {
+                        child.gameObject.SetActive(false); // Deactivate scattered objects
+                    }
                     chunkGenerator.chunkPool.Return(kvp.Value);
                     toRemove.Add(kvp.Key);
                 }
