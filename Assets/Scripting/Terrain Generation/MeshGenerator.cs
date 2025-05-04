@@ -14,6 +14,7 @@ namespace Scripting.Terrain_Generation
 
         Vector3[] vertices;
         int[] triangles;
+        Vector2[] uvs;
         Color[] colors;
 
         // resolution of vertices (how many units per vertex)
@@ -69,6 +70,7 @@ namespace Scripting.Terrain_Generation
             handle.Complete();
             
             mesh.vertices = verticesNative.ToArray();
+            mesh.uv = uvs;
             mesh.triangles = triangles;
             
             UpdateColors(minTerrainHeight, maxTerrainHeight);
@@ -90,19 +92,20 @@ namespace Scripting.Terrain_Generation
         {
 
             vertices = new Vector3[(xSize + 1) * (zSize + 1)];
+            uvs = new Vector2[vertices.Length];
 
             for (int i = 0, z = 0; z <= zSize; z++)
             {
                 for (int x = 0; x <= xSize; x++)
                 {
                     vertices[i] = new Vector3(x * xResolution, 0, z * zResolution);
+                    uvs[i] = new Vector2((float)x / xSize, (float)z / zSize);
                     i++;
                 }
             }
 
 
             triangles = new int[xSize * zSize * 6];
-
             int vert = 0;
             int tris = 0;
 
@@ -136,7 +139,6 @@ namespace Scripting.Terrain_Generation
                     i++;
                 }
             }
-
         }
 
         /// <summary>
