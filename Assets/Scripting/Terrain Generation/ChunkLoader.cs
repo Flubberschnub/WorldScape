@@ -118,7 +118,7 @@ namespace Scripting.Terrain_Generation
                 int distance = Mathf.Max(dx, dz); // LOD calculated based on max distance 
                 int requiredLOD = GetLODFromDistance(distance, viewDistance); // Calculating required LOD based on chunk distance from player
                 MeshGenerator mg = chunk.GetComponent<MeshGenerator>();
-                int currentLOD = GetLODFromSize(mg.xSize); // Getting current LOD based on current chunk's size
+                int currentLOD = GetLODFromSize(mg.xSize, chunkWorldSizeX); // Getting current LOD based on current chunk's size
                 if (currentLOD != requiredLOD) // If the current LOD of the chunk is different from the calculated LOD based on distance, update it
                 {
                     chunkGenerator.SetMeshGeneratorValues(mg, requiredLOD, chunkWorldSizeX, chunkGenerator.chunkResolutionX, chunkWorldSizeZ, chunkGenerator.chunkResolutionZ);
@@ -148,13 +148,13 @@ namespace Scripting.Terrain_Generation
         }
 
         // Determines LOD based on the size of the chunk (Since chunk size is square it can be xSize or zSize)
-        private int GetLODFromSize(int size)
+        private int GetLODFromSize(int currentSize, int baseSize)
         {
-            if (size == 20) // LOD 0 since full detail (Same as chunk size)
+            if (currentSize == baseSize) // LOD 0 since full detail (Same as chunk size)
             {
                 return 0;
             }
-            else if (size == 10) // LOD 1 since half detail (Chunk size / 2)
+            else if (currentSize == baseSize / 2) // LOD 1 since half detail (Chunk size / 2)
             {
                 return 1;
             }
