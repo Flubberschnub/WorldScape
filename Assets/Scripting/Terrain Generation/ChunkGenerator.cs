@@ -19,7 +19,7 @@ namespace Scripting.Terrain_Generation
 
         public float globalMinHeight = 0f;
         public float globalMaxHeight = 80f;
-        
+
         public GameObject emptyChunkPrefab;
         public ChunkPool chunkPool;
 
@@ -38,10 +38,13 @@ namespace Scripting.Terrain_Generation
         /// <param name="chunkSizeZ">
         /// The size of the chunk along the Z-axis in units.
         /// </param>
+        /// <param name="LOD">
+        /// The level of detail (LOD) for the chunk. There are three levels - 0 (Full detail), 1 (Half detail), 2 (Quarter detail)
+        /// </param>
         /// <returns>
         /// Returns a GameObject representing the newly generated and configured chunk.
         /// </returns>
-        public GameObject GenerateSingleChunk(int chunkX, int chunkZ, int chunkSizeX, int chunkSizeZ)
+        public GameObject GenerateSingleChunk(int chunkX, int chunkZ, int chunkSizeX, int chunkSizeZ, int LOD)
         {
             // Calculate world position
             Vector3 position = new Vector3(
@@ -55,21 +58,30 @@ namespace Scripting.Terrain_Generation
             pooledChunk.transform.position = position;
             pooledChunk.transform.rotation = Quaternion.identity;
 
-            // Configure mesh generator
+            // Configure mesh generator (Set values based on LOD)
             MeshGenerator mg = pooledChunk.GetComponent<MeshGenerator>();
-            mg.xSize = chunkSizeX;
-            mg.zSize = chunkSizeZ;
-            mg.offsetX = offsetX;
-            mg.offsetZ = offsetZ;
-            mg.xResolution = chunkResolutionX;
-            mg.zResolution = chunkResolutionZ;
-            mg.gradient = gradient;
-            mg.minTerrainHeight = globalMinHeight;
-            mg.maxTerrainHeight = globalMaxHeight;
+            SetMeshGeneratorValues(mg, LOD, chunkSizeX, chunkResolutionX, chunkSizeZ, chunkResolutionZ);
+
+
 
             // Create mesh
             mg.Create();
             return pooledChunk;
+        }
+
+        /// Sets the values of the MeshGenerator based on the LOD
+        public void SetMeshGeneratorValues(MeshGenerator mg, int LOD, int baseSizeX, float baseResolutionX, int baseSizeZ, float baseResolutionZ)
+        {
+            int reductionFactor = (int)Mathf.Pow(2, LOD); // The factor by which the amount of vertices along the x and z axis are reduced
+            mg.xSize = baseSizeX / reductionFactor;
+            mg.zSize = baseSizeZ / reductionFactor;
+            mg.xResolution = baseResolutionX * reductionFactor;
+            mg.zResolution = baseResolutionZ * reductionFactor;
+            mg.offsetX = offsetX;
+            mg.offsetZ = offsetZ;
+            mg.gradient = gradient;
+            mg.minTerrainHeight = globalMinHeight;
+            mg.maxTerrainHeight = globalMaxHeight;
         }
 
         /// Generates a GameObject representing an empty chunk prefab with default components necessary for terrain generation.
@@ -86,7 +98,7 @@ namespace Scripting.Terrain_Generation
             emptyChunk.AddComponent<MeshGenerator>();
 
             emptyChunk.GetComponent<MeshFilter>().mesh = Resources.GetBuiltinResource<Mesh>("New-Plane.fbx");
-            
+
             Material texShader = new Material(Shader.Find("Custom/HeightmapTextureShader"));
             if (texShader != null)
             {
@@ -94,7 +106,7 @@ namespace Scripting.Terrain_Generation
                 texShader.SetTexture(MidTex, Resources.Load<Texture>("Textures/stone"));
                 texShader.SetTexture(HighTex, Resources.Load<Texture>("Textures/snow"));
             }
-            
+
             emptyChunk.GetComponent<MeshRenderer>().material = texShader;
 
             return emptyChunk;
