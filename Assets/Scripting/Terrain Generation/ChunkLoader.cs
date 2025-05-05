@@ -10,8 +10,8 @@ namespace Scripting.Terrain_Generation
         private TerrainObjectScatterer terrainObjectScatterer;
         public int chunkWorldSizeX = 20;
         public int chunkWorldSizeZ = 20;
-        public int viewDistance = 1; // how many chunks around the player to keep loaded
-        
+        public int viewDistance = 20; // how many chunks around the player to keep loaded
+
         private Dictionary<Vector2Int, GameObject> loadedChunks = new Dictionary<Vector2Int, GameObject>();
         private Vector2Int currentChunkCoord;
 
@@ -19,7 +19,7 @@ namespace Scripting.Terrain_Generation
         {
             chunkGenerator = GetComponent<ChunkGenerator>();
             terrainObjectScatterer = GetComponent<TerrainObjectScatterer>();
-            
+
             // Set initial random offsets to perlin noise to ensure unique terrain generation
             chunkGenerator.offsetX = Random.Range(0f, 9999999f);
             chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
@@ -33,6 +33,7 @@ namespace Scripting.Terrain_Generation
                 currentChunkCoord = newChunkCoord;
                 LoadNearbyChunks();
                 UnloadDistantChunks();
+                UpdateChunkLODs();
             }
         }
 
@@ -64,7 +65,10 @@ namespace Scripting.Terrain_Generation
                     Vector2Int coord = new Vector2Int(currentChunkCoord.x + x, currentChunkCoord.y + z);
                     if (!loadedChunks.ContainsKey(coord))
                     {
-                        GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ);
+                        int distance = Mathf.Max(Mathf.Abs(x), Mathf.Abs(z));
+                        int LOD = GetLODFromDistance(distance, viewDistance); // Calculate LOD based on distance
+                        Debug.Log($"Generating chunk at ({x}, {z}) with LOD {LOD}, baseSizeX={chunkWorldSizeX}, baseSizeZ={chunkWorldSizeZ}");
+                        GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ, LOD);
                         terrainObjectScatterer.ScatterObjects(newChunk);
                         loadedChunks.Add(coord, newChunk);
                     }
@@ -99,6 +103,64 @@ namespace Scripting.Terrain_Generation
             foreach (var coord in toRemove)
             {
                 loadedChunks.Remove(coord);
+            }
+        }
+
+        /// Updates the LOD for all loaded chunks based on each chunk's distance from the player.
+        void UpdateChunkLODs()
+        {
+            foreach (var kvp in loadedChunks)
+            {
+                Vector2Int coord = kvp.Key;
+                GameObject chunk = kvp.Value;
+                int dx = Mathf.Abs(coord.x - currentChunkCoord.x); // x distance from player
+                int dz = Mathf.Abs(coord.y - currentChunkCoord.y); // z distance from player
+                int distance = Mathf.Max(dx, dz); // LOD calculated based on max distance 
+                int requiredLOD = GetLODFromDistance(distance, viewDistance); // Calculating required LOD based on chunk distance from player
+                MeshGenerator mg = chunk.GetComponent<MeshGenerator>();
+                int currentLOD = GetLODFromSize(mg.xSize); // Getting current LOD based on current chunk's size
+                if (currentLOD != requiredLOD) // If the current LOD of the chunk is different from the calculated LOD based on distance, update it
+                {
+                    chunkGenerator.SetMeshGeneratorValues(mg, requiredLOD, chunkWorldSizeX, chunkGenerator.chunkResolutionX, chunkWorldSizeZ, chunkGenerator.chunkResolutionZ);
+                    mg.Create();
+                }
+            }
+        }
+
+        /// Determines the LOD level based on the chunk distance from the player
+        private int GetLODFromDistance(int distance, int viewDistance)
+        {
+
+            float distancePercentage = (float)distance / viewDistance;
+
+            if (distancePercentage <= 0.2) // If the chunk distance is under 20% from player between player and max distance, LOD is 0 (Full)
+            {
+                return 0;
+            }
+            else if (distancePercentage <= 0.5) // If the chunk distance is between 20% and 50% from player between player and max distance, LOD is 1 (Half)
+            {
+                return 1;
+            }
+            else // If the chunk distance is over 50% from player between player and max distance, LOD is 2 (Quarter)
+            {
+                return 2;
+            }
+        }
+
+        // Determines LOD based on the size of the chunk (Since chunk size is square it can be xSize or zSize)
+        private int GetLODFromSize(int size)
+        {
+            if (size == 20) // LOD 0 since full detail (Same as chunk size)
+            {
+                return 0;
+            }
+            else if (size == 10) // LOD 1 since half detail (Chunk size / 2)
+            {
+                return 1;
+            }
+            else // LOD 2 since quarter detail (Chunk size / 4)
+            {
+                return 2;
             }
         }
     }
