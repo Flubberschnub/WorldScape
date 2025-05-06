@@ -82,7 +82,7 @@ namespace Scripting.Terrain_Generation
 
             int totalChunks = (2 * viewDistance + 1) * (2 * viewDistance + 1);
             int loadedChunksCount = 0;
-            int yieldInterval = 20;
+            int yieldInterval = totalChunks / 5;
 
             for (int z = -viewDistance; z <= viewDistance; z++)
             {
