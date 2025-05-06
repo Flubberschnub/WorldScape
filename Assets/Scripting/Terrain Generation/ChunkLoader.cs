@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using System.Collections.Generic;
 
 namespace Scripting.Terrain_Generation
@@ -14,10 +15,6 @@ namespace Scripting.Terrain_Generation
 
         private Dictionary<Vector2Int, GameObject> loadedChunks = new Dictionary<Vector2Int, GameObject>();
         private Vector2Int currentChunkCoord;
-        private Vector2Int oldChunkCoord;
-
-        const float viewerMoveThresholdforLOD = 10f;
-        const float sqrViewerMoveThresholdForLOD = viewerMoveThresholdforLOD * viewerMoveThresholdforLOD;
 
         private void Start()
         {
@@ -28,7 +25,7 @@ namespace Scripting.Terrain_Generation
             chunkGenerator.offsetX = Random.Range(0f, 9999999f);
             chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
 
-            UpdateChunkLODs();
+            StartCoroutine(UpdateChunkLODs());
         }
 
         private void Update()
@@ -39,13 +36,7 @@ namespace Scripting.Terrain_Generation
                 currentChunkCoord = newChunkCoord;
                 LoadNearbyChunks();
                 UnloadDistantChunks();
-            }
-
-            // LOD is updated everytime the viewer threshold distance is crossed 
-            if ((oldChunkCoord - currentChunkCoord).sqrMagnitude > sqrViewerMoveThresholdForLOD)
-            {
-                oldChunkCoord = currentChunkCoord;
-                UpdateChunkLODs();
+                StartCoroutine(UpdateChunkLODs());
             }
 
         }
@@ -120,12 +111,15 @@ namespace Scripting.Terrain_Generation
         }
 
         /// Updates the LOD for all loaded chunks based on each chunk's distance from the player.
-        void UpdateChunkLODs()
+        private IEnumerator UpdateChunkLODs()
         {
-            foreach (var kvp in loadedChunks)
+            var chunkKeys = new List<Vector2Int>(loadedChunks.Keys);
+
+            foreach (var coord in chunkKeys)
             {
-                Vector2Int coord = kvp.Key;
-                GameObject chunk = kvp.Value;
+                if (!loadedChunks.TryGetValue(coord, out GameObject chunk))
+                    continue;
+
                 int dx = Mathf.Abs(coord.x - currentChunkCoord.x); // x distance from player
                 int dz = Mathf.Abs(coord.y - currentChunkCoord.y); // z distance from player
                 int distance = Mathf.Max(dx, dz); // LOD calculated based on max distance 
@@ -137,6 +131,8 @@ namespace Scripting.Terrain_Generation
                     chunkGenerator.SetMeshGeneratorValues(mg, requiredLOD, chunkWorldSizeX, chunkGenerator.chunkResolutionX, chunkWorldSizeZ, chunkGenerator.chunkResolutionZ);
                     mg.Create();
                 }
+
+                yield return null;
             }
         }
 
