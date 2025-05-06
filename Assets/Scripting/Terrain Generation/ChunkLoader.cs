@@ -1,11 +1,15 @@
 ﻿using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 namespace Scripting.Terrain_Generation
 {
     public class ChunkLoader : MonoBehaviour
     {
+        public GameObject loadingPanel;
+        public Slider loadingProgress;
+
         public Transform cameraTransform;
         private ChunkGenerator chunkGenerator;
         private TerrainObjectScatterer terrainObjectScatterer;
@@ -29,10 +33,7 @@ namespace Scripting.Terrain_Generation
             chunkGenerator.offsetX = Random.Range(0f, 9999999f);
             chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
 
-            InitializeChunks();
-            initialized = true;
-
-            StartCoroutine(UpdateChunkLODs());
+            StartCoroutine(InitializeChunks());
         }
 
         private void Update()
@@ -71,8 +72,16 @@ namespace Scripting.Terrain_Generation
         /// The initialization process calculates the level of detail (LOD) for each chunk based on its distance
         /// from the player's current chunk, then generates the terrain and scatters objects within the chunk.
         /// </summary>
-        private void InitializeChunks()
+        private IEnumerator InitializeChunks()
         {
+            loadingPanel.SetActive(true);
+            loadingProgress.value = 0f;
+            yield return null;
+
+            int totalChunks = (2 * viewDistance + 1) * (2 * viewDistance + 1);
+            int loadedChunksCount = 0;
+            int yieldInterval = 20;
+
             for (int z = -viewDistance; z <= viewDistance; z++)
             {
                 for (int x = -viewDistance; x <= viewDistance; x++)
@@ -81,14 +90,22 @@ namespace Scripting.Terrain_Generation
                     if (!loadedChunks.ContainsKey(coord))
                     {
                         int distance = Mathf.Max(Mathf.Abs(x), Mathf.Abs(z));
-                        int LOD = GetLODFromDistance(distance, viewDistance); // Calculate LOD based on distance
-                        Debug.Log($"Generating chunk at ({x}, {z}) with LOD {LOD}, baseSizeX={chunkWorldSizeX}, baseSizeZ={chunkWorldSizeZ}");
+                        int LOD = GetLODFromDistance(distance, viewDistance);
                         GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ, terrainAmplitude, LOD);
                         terrainObjectScatterer.ScatterObjects(newChunk);
                         loadedChunks.Add(coord, newChunk);
                     }
+
+                    loadedChunksCount++;
+                    loadingProgress.value = (float)loadedChunksCount / totalChunks;
+                    if (loadedChunksCount % yieldInterval == 0)
+                        yield return null; // UI updates every 10 chunks
                 }
             }
+
+            loadingPanel.SetActive(false);
+            initialized = true;
+            StartCoroutine(UpdateChunkLODs());
         }
 
         /// <summary>
