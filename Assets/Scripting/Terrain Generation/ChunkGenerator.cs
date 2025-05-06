@@ -96,6 +96,7 @@ namespace Scripting.Terrain_Generation
             emptyChunk.AddComponent<MeshFilter>();
             emptyChunk.AddComponent<MeshRenderer>();
             emptyChunk.AddComponent<MeshGenerator>();
+            emptyChunk.AddComponent<MeshCollider>();
 
             emptyChunk.GetComponent<MeshFilter>().mesh = Resources.GetBuiltinResource<Mesh>("New-Plane.fbx");
 

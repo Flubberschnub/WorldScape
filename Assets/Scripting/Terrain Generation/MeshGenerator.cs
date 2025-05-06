@@ -48,6 +48,8 @@ namespace Scripting.Terrain_Generation
         {
             mesh = new Mesh();
             GetComponent<MeshFilter>().mesh = mesh;
+            MeshCollider meshCollider = GetComponent<MeshCollider>();
+            meshCollider.enabled = false; // Colliders are disabled by default
 
             CreateBase();
 
@@ -77,26 +79,14 @@ namespace Scripting.Terrain_Generation
 
             verticesNative.Dispose();
 
-            Debug.Log($"Chunk at {transform.position} has {vertices.Length} vertices (LOD {GetLodFromXSize(xSize)})");
+            if (meshCollider != null) // If the mesh is changed, update the new mesh collider
+            {
+                meshCollider.sharedMesh = mesh;
+            }
+
         }
 
-        private int GetLodFromXSize(int xSize)
-        { // For debugging
-
-            if (xSize == 20)
-            {
-                return 0;
-            }
-            else if (xSize == 10)
-            {
-                return 1;
-            }
-            else if (xSize == 5)
-            {
-                return 2;
-            }
-            return -1;
-        }
+ 
         /// <summary>
         /// Initializes the base structure of the mesh, including vertices, triangles, and colors,
         /// to represent a grid of defined resolution and size.
