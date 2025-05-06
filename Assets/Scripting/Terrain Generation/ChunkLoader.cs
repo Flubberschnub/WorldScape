@@ -35,7 +35,8 @@ namespace Scripting.Terrain_Generation
             chunkGenerator.offsetX = Random.Range(0f, 9999999f);
             chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
 
-            StartCoroutine(InitializeChunks());
+            StartCoroutine(UpdateChunkLODs());
+            UpdateChunkColliders();
         }
 
         private void Update()
@@ -49,6 +50,7 @@ namespace Scripting.Terrain_Generation
                 currentChunkCoord = newChunkCoord;
                 StartCoroutine(LoadNearbyChunks(chunkUpdatesPerFrame));
                 UnloadDistantChunks();
+                UpdateChunkColliders();
                 StartCoroutine(UpdateChunkLODs());
             }
 
@@ -203,6 +205,30 @@ namespace Scripting.Terrain_Generation
                 {
                     updatesThisFrame = 0;
                     yield return null;
+                }
+            }
+        }
+
+        // This enables chunk colliders for chunks located around the player (3x3 grid)
+        void UpdateChunkColliders()
+        {
+            foreach (var kvp in loadedChunks)
+            {
+                Vector2Int coord = kvp.Key;
+                GameObject chunk = kvp.Value;
+                int dx = Mathf.Abs(coord.x - currentChunkCoord.x);
+                int dz = Mathf.Abs(coord.y - currentChunkCoord.y);
+                int distance = Mathf.Max(dx, dz);
+                MeshCollider collider = chunk.GetComponent<MeshCollider>();
+                if (distance <= 1 && collider.enabled == false)
+                {
+                    collider.enabled = true; // Enable collider for current chunk and the 8 chunks surrounding it
+                    Debug.Log($"Collider enabled at ({coord.x}, {coord.y})");
+                }
+                else if (distance > 1 && collider.enabled == true)
+                {
+                    collider.enabled = false; // Disable colliders for chunks that aren't surrounding the player when the player moves
+                    Debug.Log($"Collider disabled at ({coord.x}, {coord.y})");
                 }
             }
         }
