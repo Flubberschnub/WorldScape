@@ -11,6 +11,7 @@ namespace Scripting.Terrain_Generation
         private TerrainObjectScatterer terrainObjectScatterer;
         public int chunkWorldSizeX = 20;
         public int chunkWorldSizeZ = 20;
+        public float terrainAmplitude = 300f;
         public int viewDistance = 20; // how many chunks around the player to keep loaded
         public int lodUpdatesPerFrame = 4;
 
@@ -73,7 +74,7 @@ namespace Scripting.Terrain_Generation
                         int distance = Mathf.Max(Mathf.Abs(x), Mathf.Abs(z));
                         int LOD = GetLODFromDistance(distance, viewDistance); // Calculate LOD based on distance
                         Debug.Log($"Generating chunk at ({x}, {z}) with LOD {LOD}, baseSizeX={chunkWorldSizeX}, baseSizeZ={chunkWorldSizeZ}");
-                        GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ, LOD);
+                        GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ, terrainAmplitude, LOD);
                         terrainObjectScatterer.ScatterObjects(newChunk);
                         loadedChunks.Add(coord, newChunk);
                     }
@@ -130,7 +131,7 @@ namespace Scripting.Terrain_Generation
                 int currentLOD = GetLODFromSize(mg.xSize, chunkWorldSizeX); // Getting current LOD based on current chunk's size
                 if (currentLOD != requiredLOD) // If the current LOD of the chunk is different from the calculated LOD based on distance, update it
                 {
-                    chunkGenerator.SetMeshGeneratorValues(mg, requiredLOD, chunkWorldSizeX, chunkGenerator.chunkResolutionX, chunkWorldSizeZ, chunkGenerator.chunkResolutionZ);
+                    chunkGenerator.SetMeshGeneratorValues(mg, requiredLOD, chunkWorldSizeX, chunkGenerator.chunkResolutionX, chunkWorldSizeZ, chunkGenerator.chunkResolutionZ, terrainAmplitude);
                     mg.Create();
                     updatesThisFrame++;
                 }

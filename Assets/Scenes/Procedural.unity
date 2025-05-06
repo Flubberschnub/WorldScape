@@ -218,7 +218,7 @@ MonoBehaviour:
     m_NumColorKeys: 4
     m_NumAlphaKeys: 2
   globalMinHeight: 0
-  globalMaxHeight: 80
+  globalMaxHeight: 160
   emptyChunkPrefab: {fileID: 0}
 --- !u!114 &270231146
 MonoBehaviour:
@@ -235,8 +235,9 @@ MonoBehaviour:
   cameraTransform: {fileID: 418101094}
   chunkWorldSizeX: 20
   chunkWorldSizeZ: 20
+  terrainAmplitude: 300
   viewDistance: 50
-  lodUpdatesPerFrame: 4
+  lodUpdatesPerFrame: 1
 --- !u!4 &270231147
 Transform:
   m_ObjectHideFlags: 0

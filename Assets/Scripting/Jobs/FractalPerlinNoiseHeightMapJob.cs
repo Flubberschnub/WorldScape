@@ -32,7 +32,14 @@ namespace Scripting.Jobs
             float z = vertex.z + positionOffset.z;
             float sampleX = (x + offsetX) * xScale;
             float sampleZ = (z + offsetZ) * zScale;
-            float y = FractalPerlinNoise(sampleX, sampleZ) * amplitude;
+
+            float perlin = FractalPerlinNoise(sampleX, sampleZ);
+            float voronoi = VoronoiNoise(sampleX, sampleZ, 10f);
+
+            float cliffs = Mathf.Pow(1f - voronoi, 8f);
+
+            // Blend Perlin and Voronoi
+            float y = (perlin * 0.3f + cliffs * 0.7f) * amplitude;
 
             vertices[index] = new Vector3(vertex.x, y, vertex.z);
         }
@@ -60,6 +67,42 @@ namespace Scripting.Jobs
                 frequency *= lacunarity;
             }
             return total;
+        }
+
+        /// Computes the Voronoi noise value at the specified coordinates, factoring in a defined cell size.
+        /// Voronoi noise determines the closest distance from the point to the nearest randomly offset cell center, yielding a value normalized between 0 and 1.
+        /// <param name="x">
+        /// The x-coordinate for the noise calculation.
+        /// </param>
+        /// <param name="z">
+        /// The z-coordinate for the noise calculation.
+        /// </param>
+        /// <param name="cellSize">
+        /// The size of each grid cell for calculating the Voronoi noise.
+        /// </param>
+        /// <return>
+        /// The normalized Voronoi noise value at the given coordinates.
+        /// </return>
+        private float VoronoiNoise(float x, float z, float cellSize)
+        {
+            float minDist = float.MaxValue;
+            int cellX = Mathf.FloorToInt(x / cellSize);
+            int cellZ = Mathf.FloorToInt(z / cellSize);
+
+            for (int dz = -1; dz <= 1; dz++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    int neighborX = cellX + dx;
+                    int neighborZ = cellZ + dz;
+                    // Random offset for cell center
+                    float cx = neighborX * cellSize + Mathf.PerlinNoise(neighborX, neighborZ) * cellSize;
+                    float cz = neighborZ * cellSize + Mathf.PerlinNoise(neighborZ, neighborX) * cellSize;
+                    float dist = Vector2.Distance(new Vector2(x, z), new Vector2(cx, cz));
+                    if (dist < minDist) minDist = dist;
+                }
+            }
+            return minDist / cellSize; // Normalized [0,1]
         }
 
     }
