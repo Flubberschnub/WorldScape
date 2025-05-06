@@ -12,6 +12,7 @@ namespace Scripting.Terrain_Generation
         public int chunkWorldSizeX = 20;
         public int chunkWorldSizeZ = 20;
         public int viewDistance = 20; // how many chunks around the player to keep loaded
+        public int lodUpdatesPerFrame = 4;
 
         private Dictionary<Vector2Int, GameObject> loadedChunks = new Dictionary<Vector2Int, GameObject>();
         private Vector2Int currentChunkCoord;
@@ -114,6 +115,7 @@ namespace Scripting.Terrain_Generation
         private IEnumerator UpdateChunkLODs()
         {
             var chunkKeys = new List<Vector2Int>(loadedChunks.Keys);
+            int updatesThisFrame = 0;
 
             foreach (var coord in chunkKeys)
             {
@@ -130,9 +132,14 @@ namespace Scripting.Terrain_Generation
                 {
                     chunkGenerator.SetMeshGeneratorValues(mg, requiredLOD, chunkWorldSizeX, chunkGenerator.chunkResolutionX, chunkWorldSizeZ, chunkGenerator.chunkResolutionZ);
                     mg.Create();
+                    updatesThisFrame++;
                 }
 
-                yield return null;
+                if (updatesThisFrame >= lodUpdatesPerFrame)
+                {
+                    updatesThisFrame = 0;
+                    yield return null;
+                }
             }
         }
 

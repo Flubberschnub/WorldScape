@@ -236,6 +236,7 @@ MonoBehaviour:
   chunkWorldSizeX: 20
   chunkWorldSizeZ: 20
   viewDistance: 50
+  lodUpdatesPerFrame: 4
 --- !u!4 &270231147
 Transform:
   m_ObjectHideFlags: 0
