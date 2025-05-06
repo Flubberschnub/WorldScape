@@ -44,7 +44,7 @@ namespace Scripting.Terrain_Generation
         /// <returns>
         /// Returns a GameObject representing the newly generated and configured chunk.
         /// </returns>
-        public GameObject GenerateSingleChunk(int chunkX, int chunkZ, int chunkSizeX, int chunkSizeZ, int LOD)
+        public GameObject GenerateSingleChunk(int chunkX, int chunkZ, int chunkSizeX, int chunkSizeZ, float terrainAmplitude, int LOD)
         {
             // Calculate world position
             Vector3 position = new Vector3(
@@ -60,9 +60,7 @@ namespace Scripting.Terrain_Generation
 
             // Configure mesh generator (Set values based on LOD)
             MeshGenerator mg = pooledChunk.GetComponent<MeshGenerator>();
-            SetMeshGeneratorValues(mg, LOD, chunkSizeX, chunkResolutionX, chunkSizeZ, chunkResolutionZ);
-
-
+            SetMeshGeneratorValues(mg, LOD, chunkSizeX, chunkResolutionX, chunkSizeZ, chunkResolutionZ, terrainAmplitude);
 
             // Create mesh
             mg.Create();
@@ -70,7 +68,7 @@ namespace Scripting.Terrain_Generation
         }
 
         /// Sets the values of the MeshGenerator based on the LOD
-        public void SetMeshGeneratorValues(MeshGenerator mg, int LOD, int baseSizeX, float baseResolutionX, int baseSizeZ, float baseResolutionZ)
+        public void SetMeshGeneratorValues(MeshGenerator mg, int LOD, int baseSizeX, float baseResolutionX, int baseSizeZ, float baseResolutionZ, float amplitude)
         {
             int reductionFactor = (int)Mathf.Pow(2, LOD); // The factor by which the amount of vertices along the x and z axis are reduced
             mg.xSize = baseSizeX / reductionFactor;
@@ -79,6 +77,7 @@ namespace Scripting.Terrain_Generation
             mg.zResolution = baseResolutionZ * reductionFactor;
             mg.offsetX = offsetX;
             mg.offsetZ = offsetZ;
+            mg.amplitude = amplitude;
             mg.gradient = gradient;
             mg.minTerrainHeight = globalMinHeight;
             mg.maxTerrainHeight = globalMaxHeight;

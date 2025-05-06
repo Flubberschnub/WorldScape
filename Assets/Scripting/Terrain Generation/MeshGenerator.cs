@@ -28,6 +28,8 @@ namespace Scripting.Terrain_Generation
         public float offsetX;
         public float offsetZ;
 
+        public float amplitude;
+
         public Gradient gradient;
 
         public float minTerrainHeight;
@@ -63,7 +65,7 @@ namespace Scripting.Terrain_Generation
                 offsetZ = offsetZ,
                 xScale = 0.007f,
                 zScale = 0.007f,
-                amplitude = 60f,
+                amplitude = amplitude,
                 persistence = 0.5f,
                 lacunarity = 2f,
                 octaves = 5
