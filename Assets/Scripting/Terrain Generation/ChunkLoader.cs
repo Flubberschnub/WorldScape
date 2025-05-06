@@ -1,23 +1,30 @@
 ﻿using System.Collections;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 namespace Scripting.Terrain_Generation
 {
     public class ChunkLoader : MonoBehaviour
     {
+        public GameObject loadingPanel;
+        public Slider loadingProgress;
+
         public Transform cameraTransform;
         private ChunkGenerator chunkGenerator;
         private TerrainObjectScatterer terrainObjectScatterer;
         public int chunkWorldSizeX = 20;
         public int chunkWorldSizeZ = 20;
+        public float terrainAmplitude = 300f;
         public int viewDistance = 20; // how many chunks around the player to keep loaded
         public int lodUpdatesPerFrame = 4;
+        public int chunkUpdatesPerFrame = 4;
         public float LOD0Dist = 0.2f; // The ratio of the distance from the player where the chunks are LOD 0 (compared to view distance)
         public float LOD1Dist = 0.5f; // The ratio of the distance from the player where the chunks are LOD 0 (compared to view distance)
 
         private Dictionary<Vector2Int, GameObject> loadedChunks = new Dictionary<Vector2Int, GameObject>();
         private Vector2Int currentChunkCoord;
+        private bool initialized = false;
 
         private void Start()
         {
@@ -28,16 +35,19 @@ namespace Scripting.Terrain_Generation
             chunkGenerator.offsetX = Random.Range(0f, 9999999f);
             chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
 
-            StartCoroutine(UpdateChunkLODs());
+            StartCoroutine(InitializeChunks());
         }
 
         private void Update()
         {
+            if (!initialized)
+                return;
+
             Vector2Int newChunkCoord = GetChunkCoord(cameraTransform.position);
             if (newChunkCoord != currentChunkCoord)
             {
                 currentChunkCoord = newChunkCoord;
-                LoadNearbyChunks();
+                StartCoroutine(LoadNearbyChunks(chunkUpdatesPerFrame));
                 UnloadDistantChunks();
                 StartCoroutine(UpdateChunkLODs());
             }
@@ -59,12 +69,57 @@ namespace Scripting.Terrain_Generation
         }
 
         /// <summary>
-        /// Loads all chunks surrounding the player's current chunk position, within the specified view distance.
-        /// Chunks that are not yet loaded are instantiated using the chunk generator, and any necessary terrain
-        /// objects are scattered onto them. Loaded chunks are added to the dictionary for management.
+        /// Initializes the surrounding chunks within the defined view distance based on the player's current position.
+        /// It ensures that chunks are created and loaded into the environment if they are not already present.
+        /// The initialization process calculates the level of detail (LOD) for each chunk based on its distance
+        /// from the player's current chunk, then generates the terrain and scatters objects within the chunk.
         /// </summary>
-        void LoadNearbyChunks()
+        private IEnumerator InitializeChunks()
         {
+            loadingPanel.SetActive(true);
+            loadingProgress.value = 0f;
+            yield return null;
+
+            int totalChunks = (2 * viewDistance + 1) * (2 * viewDistance + 1);
+            int loadedChunksCount = 0;
+            int yieldInterval = totalChunks / 5;
+
+            for (int z = -viewDistance; z <= viewDistance; z++)
+            {
+                for (int x = -viewDistance; x <= viewDistance; x++)
+                {
+                    Vector2Int coord = new Vector2Int(currentChunkCoord.x + x, currentChunkCoord.y + z);
+                    if (!loadedChunks.ContainsKey(coord))
+                    {
+                        int distance = Mathf.Max(Mathf.Abs(x), Mathf.Abs(z));
+                        int LOD = GetLODFromDistance(distance, viewDistance);
+                        GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ, terrainAmplitude, LOD);
+                        terrainObjectScatterer.ScatterObjects(newChunk);
+                        loadedChunks.Add(coord, newChunk);
+                    }
+
+                    loadedChunksCount++;
+                    loadingProgress.value = (float)loadedChunksCount / totalChunks;
+                    if (loadedChunksCount % yieldInterval == 0)
+                        yield return null; // UI updates every 10 chunks
+                }
+            }
+
+            loadingPanel.SetActive(false);
+            initialized = true;
+            StartCoroutine(UpdateChunkLODs());
+        }
+
+        /// <summary>
+        /// Loads nearby chunks around the player's current position within the specified view distance.
+        /// Chunks are generated dynamically if they are not already loaded, with a specified limit
+        /// on the number of chunks that can be processed per frame to maintain performance.
+        /// </summary>
+        /// <param name="maxPerFrame">The maximum number of chunks that can be loaded in a single frame.</param>
+        /// <returns>An IEnumerator used to handle the asynchronous loading of chunks over multiple frames.</returns>
+        private IEnumerator LoadNearbyChunks(int maxPerFrame)
+        {
+            int loadedThisFrame = 0;
             for (int z = -viewDistance; z <= viewDistance; z++)
             {
                 for (int x = -viewDistance; x <= viewDistance; x++)
@@ -75,9 +130,16 @@ namespace Scripting.Terrain_Generation
                         int distance = Mathf.Max(Mathf.Abs(x), Mathf.Abs(z));
                         int LOD = GetLODFromDistance(distance, viewDistance); // Calculate LOD based on distance
                         Debug.Log($"Generating chunk at ({x}, {z}) with LOD {LOD}, baseSizeX={chunkWorldSizeX}, baseSizeZ={chunkWorldSizeZ}");
-                        GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ, LOD);
+                        GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ, terrainAmplitude, LOD);
                         terrainObjectScatterer.ScatterObjects(newChunk);
                         loadedChunks.Add(coord, newChunk);
+
+                        loadedThisFrame++;
+                        if (loadedThisFrame >= maxPerFrame)
+                        {
+                            loadedThisFrame = 0;
+                            yield return null; // Wait for next frame
+                        }
                     }
                 }
             }
@@ -89,7 +151,7 @@ namespace Scripting.Terrain_Generation
         /// and the coordinates of each loaded chunk. If a chunk lies beyond the specified view distance,
         /// it is removed from the dictionary of loaded chunks, deactivated, and returned to the chunk pool.
         /// </summary>
-        void UnloadDistantChunks()
+        private void UnloadDistantChunks()
         {
             List<Vector2Int> toRemove = new List<Vector2Int>();
             foreach (var kvp in loadedChunks)
@@ -132,7 +194,7 @@ namespace Scripting.Terrain_Generation
                 int currentLOD = GetLODFromSize(mg.xSize, chunkWorldSizeX); // Getting current LOD based on current chunk's size
                 if (currentLOD != requiredLOD) // If the current LOD of the chunk is different from the calculated LOD based on distance, update it
                 {
-                    chunkGenerator.SetMeshGeneratorValues(mg, requiredLOD, chunkWorldSizeX, chunkGenerator.chunkResolutionX, chunkWorldSizeZ, chunkGenerator.chunkResolutionZ);
+                    chunkGenerator.SetMeshGeneratorValues(mg, requiredLOD, chunkWorldSizeX, chunkGenerator.chunkResolutionX, chunkWorldSizeZ, chunkGenerator.chunkResolutionZ, terrainAmplitude);
                     mg.Create();
                     updatesThisFrame++;
                 }
