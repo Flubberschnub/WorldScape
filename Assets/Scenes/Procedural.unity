@@ -233,9 +233,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 418101094}
-  chunkWorldSizeX: 5
-  chunkWorldSizeZ: 5
-  viewDistance: 100
+  chunkWorldSizeX: 20
+  chunkWorldSizeZ: 20
+  viewDistance: 50
 --- !u!4 &270231147
 Transform:
   m_ObjectHideFlags: 0
