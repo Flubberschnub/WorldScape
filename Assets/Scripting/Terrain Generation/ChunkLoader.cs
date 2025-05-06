@@ -14,9 +14,11 @@ namespace Scripting.Terrain_Generation
         public float terrainAmplitude = 300f;
         public int viewDistance = 20; // how many chunks around the player to keep loaded
         public int lodUpdatesPerFrame = 4;
+        public int chunkUpdatesPerFrame = 4;
 
         private Dictionary<Vector2Int, GameObject> loadedChunks = new Dictionary<Vector2Int, GameObject>();
         private Vector2Int currentChunkCoord;
+        private bool initialized = false;
 
         private void Start()
         {
@@ -27,16 +29,22 @@ namespace Scripting.Terrain_Generation
             chunkGenerator.offsetX = Random.Range(0f, 9999999f);
             chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
 
+            InitializeChunks();
+            initialized = true;
+
             StartCoroutine(UpdateChunkLODs());
         }
 
         private void Update()
         {
+            if (!initialized)
+                return;
+
             Vector2Int newChunkCoord = GetChunkCoord(cameraTransform.position);
             if (newChunkCoord != currentChunkCoord)
             {
                 currentChunkCoord = newChunkCoord;
-                LoadNearbyChunks();
+                StartCoroutine(LoadNearbyChunks(chunkUpdatesPerFrame));
                 UnloadDistantChunks();
                 StartCoroutine(UpdateChunkLODs());
             }
@@ -58,11 +66,12 @@ namespace Scripting.Terrain_Generation
         }
 
         /// <summary>
-        /// Loads all chunks surrounding the player's current chunk position, within the specified view distance.
-        /// Chunks that are not yet loaded are instantiated using the chunk generator, and any necessary terrain
-        /// objects are scattered onto them. Loaded chunks are added to the dictionary for management.
+        /// Initializes the surrounding chunks within the defined view distance based on the player's current position.
+        /// It ensures that chunks are created and loaded into the environment if they are not already present.
+        /// The initialization process calculates the level of detail (LOD) for each chunk based on its distance
+        /// from the player's current chunk, then generates the terrain and scatters objects within the chunk.
         /// </summary>
-        void LoadNearbyChunks()
+        private void InitializeChunks()
         {
             for (int z = -viewDistance; z <= viewDistance; z++)
             {
@@ -83,12 +92,47 @@ namespace Scripting.Terrain_Generation
         }
 
         /// <summary>
+        /// Loads nearby chunks around the player's current position within the specified view distance.
+        /// Chunks are generated dynamically if they are not already loaded, with a specified limit
+        /// on the number of chunks that can be processed per frame to maintain performance.
+        /// </summary>
+        /// <param name="maxPerFrame">The maximum number of chunks that can be loaded in a single frame.</param>
+        /// <returns>An IEnumerator used to handle the asynchronous loading of chunks over multiple frames.</returns>
+        private IEnumerator LoadNearbyChunks(int maxPerFrame)
+        {
+            int loadedThisFrame = 0;
+            for (int z = -viewDistance; z <= viewDistance; z++)
+            {
+                for (int x = -viewDistance; x <= viewDistance; x++)
+                {
+                    Vector2Int coord = new Vector2Int(currentChunkCoord.x + x, currentChunkCoord.y + z);
+                    if (!loadedChunks.ContainsKey(coord))
+                    {
+                        int distance = Mathf.Max(Mathf.Abs(x), Mathf.Abs(z));
+                        int LOD = GetLODFromDistance(distance, viewDistance); // Calculate LOD based on distance
+                        Debug.Log($"Generating chunk at ({x}, {z}) with LOD {LOD}, baseSizeX={chunkWorldSizeX}, baseSizeZ={chunkWorldSizeZ}");
+                        GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ, terrainAmplitude, LOD);
+                        terrainObjectScatterer.ScatterObjects(newChunk);
+                        loadedChunks.Add(coord, newChunk);
+
+                        loadedThisFrame++;
+                        if (loadedThisFrame >= maxPerFrame)
+                        {
+                            loadedThisFrame = 0;
+                            yield return null; // Wait for next frame
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Unloads chunks that are outside the player's view distance to free up resources.
         /// This is determined by calculating the distance between the current chunk coordinates
         /// and the coordinates of each loaded chunk. If a chunk lies beyond the specified view distance,
         /// it is removed from the dictionary of loaded chunks, deactivated, and returned to the chunk pool.
         /// </summary>
-        void UnloadDistantChunks()
+        private void UnloadDistantChunks()
         {
             List<Vector2Int> toRemove = new List<Vector2Int>();
             foreach (var kvp in loadedChunks)
