@@ -14,6 +14,10 @@ namespace Scripting.Terrain_Generation
 
         private Dictionary<Vector2Int, GameObject> loadedChunks = new Dictionary<Vector2Int, GameObject>();
         private Vector2Int currentChunkCoord;
+        private Vector2Int oldChunkCoord;
+
+        const float viewerMoveThresholdforLOD = 10f;
+        const float sqrViewerMoveThresholdForLOD = viewerMoveThresholdforLOD * viewerMoveThresholdforLOD;
 
         private void Start()
         {
@@ -23,6 +27,8 @@ namespace Scripting.Terrain_Generation
             // Set initial random offsets to perlin noise to ensure unique terrain generation
             chunkGenerator.offsetX = Random.Range(0f, 9999999f);
             chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
+
+            UpdateChunkLODs();
         }
 
         private void Update()
@@ -33,8 +39,15 @@ namespace Scripting.Terrain_Generation
                 currentChunkCoord = newChunkCoord;
                 LoadNearbyChunks();
                 UnloadDistantChunks();
+            }
+
+            // LOD is updated everytime the viewer threshold distance is crossed 
+            if ((oldChunkCoord - currentChunkCoord).sqrMagnitude > sqrViewerMoveThresholdForLOD)
+            {
+                oldChunkCoord = currentChunkCoord;
                 UpdateChunkLODs();
             }
+
         }
 
         /// <summary>
