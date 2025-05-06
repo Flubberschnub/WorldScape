@@ -9,52 +9,63 @@
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType"="Opaque" "Queue"="Geometry" }
         Pass
         {
-            CGPROGRAM
+            Name "ForwardLit"
+            Tags { "LightMode"="UniversalForward" }
+
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma multi_compile_fog
 
-            sampler2D _LowTex;
-            sampler2D _MidTex;
-            sampler2D _HighTex;
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-            struct appdata
+            TEXTURE2D(_LowTex); SAMPLER(sampler_LowTex);
+            TEXTURE2D(_MidTex); SAMPLER(sampler_MidTex);
+            TEXTURE2D(_HighTex); SAMPLER(sampler_HighTex);
+
+            struct Attributes
             {
-                float4 vertex : POSITION;
+                float4 positionOS : POSITION;
                 float4 color : COLOR;
                 float2 uv : TEXCOORD0;
             };
 
-            struct v2f
+            struct Varyings
             {
-                float4 position : SV_POSITION;
+                float4 positionHCS : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 float height : TEXCOORD1;
+                float fogFactor : TEXCOORD2;
             };
 
-            v2f vert(appdata v)
+            Varyings vert(Attributes input)
             {
-                v2f o;
-                o.position = UnityObjectToClipPos(v.vertex);
-                o.uv = v.uv;
-                o.height = v.color.r; // Use red channel as height
-                return o;
+                Varyings output;
+                float3 worldPos = TransformObjectToWorld(input.positionOS.xyz);
+                output.positionHCS = TransformWorldToHClip(worldPos);
+                output.uv = input.uv;
+                output.height = input.color.r;
+                output.fogFactor = ComputeFogFactor(output.positionHCS.z);
+                return output;
             }
 
-            fixed4 frag(v2f i) : SV_Target
+            half4 frag(Varyings input) : SV_Target
             {
-                fixed4 lowTex = tex2D(_LowTex, i.uv);
-                fixed4 midTex = tex2D(_MidTex, i.uv);
-                fixed4 highTex = tex2D(_HighTex, i.uv);
+                half4 lowTex = SAMPLE_TEXTURE2D(_LowTex, sampler_LowTex, input.uv);
+                half4 midTex = SAMPLE_TEXTURE2D(_MidTex, sampler_MidTex, input.uv);
+                half4 highTex = SAMPLE_TEXTURE2D(_HighTex, sampler_HighTex, input.uv);
 
-                fixed4 color = lerp(lowTex, midTex, smoothstep(0.35, 0.55, i.height));
-                color = lerp(color, highTex, smoothstep(0.65, 0.85, i.height));
+                half4 color = lerp(lowTex, midTex, smoothstep(0.35, 0.55, input.height));
+                color = lerp(color, highTex, smoothstep(0.65, 0.85, input.height));
+                color.rgb = MixFog(color.rgb, input.fogFactor); // Apply URP fog
 
                 return color;
             }
-            ENDCG
+            ENDHLSL
         }
     }
+    FallBack "Hidden/Shader Graph/FallbackError"
 }
