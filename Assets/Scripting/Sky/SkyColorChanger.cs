@@ -37,5 +37,7 @@ public class SkyColorChanger : MonoBehaviour
         // Apply colors to the skybox
         skyboxMaterial.SetColor("_SkyTint", skyColor);
         skyboxMaterial.SetColor("_GroundColor", groundColor);
+
+        RenderSettings.fogColor = skyColor;
     }
 }

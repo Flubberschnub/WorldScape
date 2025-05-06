@@ -37,6 +37,8 @@ namespace Scripting.Terrain_Generation
 
             StartCoroutine(UpdateChunkLODs());
             UpdateChunkColliders();
+
+            StartCoroutine(InitializeChunks()); // Initialize chunks around the player
         }
 
         private void Update()
