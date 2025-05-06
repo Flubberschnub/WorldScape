@@ -19,6 +19,8 @@ namespace Scripting.Terrain_Generation
         public int viewDistance = 20; // how many chunks around the player to keep loaded
         public int lodUpdatesPerFrame = 4;
         public int chunkUpdatesPerFrame = 4;
+        public float LOD0Dist = 0.2f; // The ratio of the distance from the player where the chunks are LOD 0 (compared to view distance)
+        public float LOD1Dist = 0.5f; // The ratio of the distance from the player where the chunks are LOD 0 (compared to view distance)
 
         private Dictionary<Vector2Int, GameObject> loadedChunks = new Dictionary<Vector2Int, GameObject>();
         private Vector2Int currentChunkCoord;
@@ -211,15 +213,15 @@ namespace Scripting.Terrain_Generation
 
             float distancePercentage = (float)distance / viewDistance;
 
-            if (distancePercentage <= 0.2) // If the chunk distance is under 20% from player between player and max distance, LOD is 0 (Full)
+            if (distancePercentage <= LOD0Dist) // If the chunk distance is under LOD0DistRange from player between player and max distance, LOD is 0 (Full)
             {
                 return 0;
             }
-            else if (distancePercentage <= 0.5) // If the chunk distance is between 20% and 50% from player between player and max distance, LOD is 1 (Half)
+            else if (distancePercentage <= LOD1Dist) // If the chunk distance is between LOD0Dist and LOD1Dist from player between player and max distance, LOD is 1 (Half)
             {
                 return 1;
             }
-            else // If the chunk distance is over 50% from player between player and max distance, LOD is 2 (Quarter)
+            else // If the chunk distance is over LOD1Dist from player between player and max distance, LOD is 2 (Quarter)
             {
                 return 2;
             }
