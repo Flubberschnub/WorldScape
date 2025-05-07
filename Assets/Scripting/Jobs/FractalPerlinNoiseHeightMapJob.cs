@@ -34,7 +34,7 @@ namespace Scripting.Jobs
             float sampleZ = (z + offsetZ) * zScale;
 
             float perlin = FractalPerlinNoise(sampleX, sampleZ);
-            float voronoi = VoronoiNoise(sampleX, sampleZ, 10f);
+            float voronoi = VoronoiNoise(sampleX, sampleZ, 30);
 
             float cliffs = Mathf.Pow(1f - voronoi, 8f);
 
