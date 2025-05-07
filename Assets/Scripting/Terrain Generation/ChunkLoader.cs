@@ -37,7 +37,6 @@ namespace Scripting.Terrain_Generation
             }
             else
             {
-                Debug.LogError("FirstPersonMovement not found in the scene.");
                 return;
             }
             chunkGenerator = GetComponent<ChunkGenerator>();
@@ -146,7 +145,7 @@ namespace Scripting.Terrain_Generation
                     {
                         int distance = Mathf.Max(Mathf.Abs(x), Mathf.Abs(z));
                         int LOD = GetLODFromDistance(distance, viewDistance); // Calculate LOD based on distance
-                        Debug.Log($"Generating chunk at ({x}, {z}) with LOD {LOD}, baseSizeX={chunkWorldSizeX}, baseSizeZ={chunkWorldSizeZ}");
+                        // Debug.Log($"Generating chunk at ({x}, {z}) with LOD {LOD}, baseSizeX={chunkWorldSizeX}, baseSizeZ={chunkWorldSizeZ}");
                         GameObject newChunk = chunkGenerator.GenerateSingleChunk(coord.x, coord.y, chunkWorldSizeX, chunkWorldSizeZ, terrainAmplitude, LOD);
                         terrainObjectScatterer.ScatterObjects(newChunk);
                         loadedChunks.Add(coord, newChunk);
@@ -238,12 +237,12 @@ namespace Scripting.Terrain_Generation
                 if (distance <= 1 && collider.enabled == false)
                 {
                     collider.enabled = true; // Enable collider for current chunk and the 8 chunks surrounding it
-                    Debug.Log($"Collider enabled at ({coord.x}, {coord.y})");
+                    // Debug.Log($"Collider enabled at ({coord.x}, {coord.y})");
                 }
                 else if (distance > 1 && collider.enabled == true)
                 {
                     collider.enabled = false; // Disable colliders for chunks that aren't surrounding the player when the player moves
-                    Debug.Log($"Collider disabled at ({coord.x}, {coord.y})");
+                    // Debug.Log($"Collider disabled at ({coord.x}, {coord.y})");
                 }
             }
         }
