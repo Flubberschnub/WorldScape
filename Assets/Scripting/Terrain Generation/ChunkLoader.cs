@@ -18,6 +18,7 @@ namespace Scripting.Terrain_Generation
         public int chunkWorldSizeZ = 20;
         public float terrainAmplitude = 300f;
         public int viewDistance = 20; // how many chunks around the player to keep loaded
+        public bool randomOffset;
         public int lodUpdatesPerFrame = 4;
         public int chunkUpdatesPerFrame = 4;
         public float LOD0Dist = 0.2f; // The ratio of the distance from the player where the chunks are LOD 0 (compared to view distance)
@@ -44,13 +45,14 @@ namespace Scripting.Terrain_Generation
             terrainObjectScatterer = GetComponent<TerrainObjectScatterer>();
 
             // Set initial random offsets to perlin noise to ensure unique terrain generation
-            chunkGenerator.offsetX = Random.Range(0f, 9999999f);
-            chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
-
-            StartCoroutine(UpdateChunkLODs());
+            if (randomOffset)
+            {
+                chunkGenerator.offsetX = Random.Range(0f, 9999999f);
+                chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
+            }
 
             StartCoroutine(InitializeChunks()); // Initialize chunks around the player
-
+            StartCoroutine(UpdateChunkLODs());
         }
 
         private void Update()
