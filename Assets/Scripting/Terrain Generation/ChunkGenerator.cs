@@ -64,7 +64,7 @@ namespace Scripting.Terrain_Generation
 
             // Create mesh
             mg.Create();
-            mg.GetComponent<MeshCollider>().enabled = true;
+            mg.GetComponent<MeshCollider>().enabled = false; // Mesh colliders are disabled by default
             return pooledChunk;
         }
 

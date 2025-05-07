@@ -120,6 +120,7 @@ namespace Scripting.Terrain_Generation
                     
                 }
             }
+            UpdateChunkColliders();
 
             loadingPanel.SetActive(false);
             initialized = true;
