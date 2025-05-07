@@ -128,6 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 92533822}
+  - component: {fileID: 92533823}
   m_Layer: 0
   m_Name: sunPivot
   m_TagString: Untagged
@@ -152,6 +153,20 @@ Transform:
   - {fileID: 1573686557}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &92533823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 92533821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7ae43f31fa1add49873cceaf5703f09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1302143969}
+  offset: {x: 0, y: -302, z: 0}
 --- !u!1 &270231144
 GameObject:
   m_ObjectHideFlags: 0
@@ -1401,6 +1416,11 @@ MonoBehaviour:
     m_NumColorKeys: 7
     m_NumAlphaKeys: 2
   timeController: {fileID: 2028797227}
+--- !u!4 &1302143969 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5238820401998598406, guid: f2e0b7ae4dae8cf44955bccd3512b213, type: 3}
+  m_PrefabInstance: {fileID: 1916897457}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1399429812
 GameObject:
   m_ObjectHideFlags: 0
@@ -1860,6 +1880,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1664459324}
+  - component: {fileID: 1664459325}
   m_Layer: 0
   m_Name: moonPivot
   m_TagString: Untagged
@@ -1884,6 +1905,20 @@ Transform:
   - {fileID: 1498996880}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1664459325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1664459323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7ae43f31fa1add49873cceaf5703f09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1302143969}
+  offset: {x: 0, y: -302, z: 0}
 --- !u!1 &1703599802
 GameObject:
   m_ObjectHideFlags: 0
@@ -2021,7 +2056,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5269945355364510514, guid: f2e0b7ae4dae8cf44955bccd3512b213, type: 3}
       propertyPath: runSpeed
-      value: 15
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 5272657471857185710, guid: f2e0b7ae4dae8cf44955bccd3512b213, type: 3}
       propertyPath: isGrounded
