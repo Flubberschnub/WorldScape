@@ -102,7 +102,7 @@ namespace Scripting.Terrain_Generation
         {
 
             int vertexCount = (xSize + 1) * (zSize + 1);
-            Debug.Log($"Creating base with xSize={xSize}, zSize={zSize}, vertices count={vertexCount}");
+            // Debug.Log($"Creating base with xSize={xSize}, zSize={zSize}, vertices count={vertexCount}");
             vertices = new Vector3[vertexCount];
             uvs = new Vector2[vertices.Length];
 
