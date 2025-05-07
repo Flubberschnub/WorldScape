@@ -11,6 +11,7 @@ namespace Scripting.Terrain_Generation
         public Slider loadingProgress;
 
         public Transform cameraTransform;
+        public Transform characterTransform;
         private ChunkGenerator chunkGenerator;
         private TerrainObjectScatterer terrainObjectScatterer;
         public int chunkWorldSizeX = 20;
@@ -28,6 +29,17 @@ namespace Scripting.Terrain_Generation
 
         private void Start()
         {
+            FirstPersonMovement movement = FindFirstObjectByType<FirstPersonMovement>();
+            if (movement != null)
+            {
+                characterTransform = movement.transform;
+                currentChunkCoord = GetChunkCoord(characterTransform.position);
+            }
+            else
+            {
+                Debug.LogError("FirstPersonMovement not found in the scene.");
+                return;
+            }
             chunkGenerator = GetComponent<ChunkGenerator>();
             terrainObjectScatterer = GetComponent<TerrainObjectScatterer>();
 
@@ -36,9 +48,9 @@ namespace Scripting.Terrain_Generation
             chunkGenerator.offsetZ = Random.Range(0f, 9999999f);
 
             StartCoroutine(UpdateChunkLODs());
-            UpdateChunkColliders();
 
             StartCoroutine(InitializeChunks()); // Initialize chunks around the player
+
         }
 
         private void Update()
@@ -46,7 +58,7 @@ namespace Scripting.Terrain_Generation
             if (!initialized)
                 return;
 
-            Vector2Int newChunkCoord = GetChunkCoord(cameraTransform.position);
+            Vector2Int newChunkCoord = GetChunkCoord(characterTransform.position);
             if (newChunkCoord != currentChunkCoord)
             {
                 currentChunkCoord = newChunkCoord;
@@ -102,10 +114,11 @@ namespace Scripting.Terrain_Generation
                         loadedChunks.Add(coord, newChunk);
                     }
 
-                    loadedChunksCount++;
+                        loadedChunksCount++;
                     loadingProgress.value = (float)loadedChunksCount / totalChunks;
                     if (loadedChunksCount % yieldInterval == 0)
                         yield return null; // UI updates every 10 chunks
+                    
                 }
             }
 

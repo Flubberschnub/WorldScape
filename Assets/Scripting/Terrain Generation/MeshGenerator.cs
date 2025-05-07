@@ -51,7 +51,6 @@ namespace Scripting.Terrain_Generation
             mesh = new Mesh();
             GetComponent<MeshFilter>().mesh = mesh;
             MeshCollider meshCollider = GetComponent<MeshCollider>();
-            meshCollider.enabled = false; // Colliders are disabled by default
 
             CreateBase();
 

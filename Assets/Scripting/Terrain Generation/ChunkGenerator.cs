@@ -64,6 +64,7 @@ namespace Scripting.Terrain_Generation
 
             // Create mesh
             mg.Create();
+            mg.GetComponent<MeshCollider>().enabled = true;
             return pooledChunk;
         }
 
